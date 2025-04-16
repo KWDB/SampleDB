@@ -4,7 +4,7 @@ SampleDB 是一个用于展示示例数据与场景的项目。其核心目标�
 
 ## 示例一：智能电表模型
 
-- [创建表](./smart-meter/README.md#创建表)
+- [表结构设计](./smart-meter/README.md#表结构设计)
 - [导入数据](./smart-meter/README.md#导入数据)
 - [准备数据](./smart-meter/README.md#准备数据)
   - [关系库 rdb](./smart-meter/README.md#关系库-rdb)

@@ -1,8 +1,8 @@
 # 智能电表
 
-## 创建表
+## 表结构设计
 
-您可以查看[表结构设计](./table-schema.md)中的内容并执行其中的 SQL 语句，创建表。
+您可以在[表结构设计](./table-schema.md)中查看智能电表模型的表设计。
 
 ## 导入数据
 
@@ -25,38 +25,56 @@ tar xvf tsdb.tar.gz
 导入 rdb 数据
 
 ```sql
-import database cvs data ("nodelocal://1/rdb")
+import database csv data ("nodelocal://1/rdb")；
 ```
 
-关系库导入验证
 ```sql
-root@:26257/rdb> SHOW TABLES;
-| table_name  |  table_type  |
---------------+---------------
-| alarm_rules |   BASE TABLE   |
-| area_info   |   BASE TABLE   |
-| meter_info  |   BASE TABLE   |
-| user_info   |   BASE TABLE   |
+        job_id        |  status   | fraction_completed | rows | abandon_rows | reject_rows | note
+----------------------+-----------+--------------------+------+--------------+-------------+-------
+  1064039269816729601 | succeeded |                  1 |  305 | 0            | 0           | None
+(1 row)
+```
+
+关系库导入验证：
+```sql
+root@127.0.0.1:26257/rdb> show tables;
+  table_name  | table_type
+--------------+-------------
+  alarm_rules | BASE TABLE
+  area_info   | BASE TABLE
+  meter_info  | BASE TABLE
+  user_info   | BASE TABLE
 (4 rows)
-Time: 3.244153ms
+
+Time: 2.971167ms
 ```
 
 ### 时序库 tsdb
 
 导入 tsdb 数据
 ```sql
-import database cvs data ("nodelocal://1/tsdb")
+import database csv data ("nodelocal://1/tsdb");
 ```
 
-时序库导入验证
+```sql
+  job_id |  status   | fraction_completed | rows  | abandon_rows | reject_rows | note
+---------+-----------+--------------------+-------+--------------+-------------+-------
+  -      | succeeded |                  1 | 10100 | 0            | 0           | None
+(1 row)
+
+Time: 240.805ms
+```
+
+时序库导入验证：
 
 ```sql
-root@:26257/tsdb> SHOW TABLES;
-|  table_name  |    table_type  
----------------+---------------------
-|  meter_data  |   TIME SERIES TABLE 
-(1 rows)
-Time: 2.875508ms
+root@127.0.0.1:26257/tsdb> show tables;
+  table_name |    table_type
+-------------+--------------------
+  meter_data | TIME SERIES TABLE
+(1 row)
+
+Time: 3.142458ms
 ```
 
 ### 时序数据生成语句
