@@ -59,7 +59,7 @@ multi-mode/
 
 * 执行 `generate_data.sh` 脚本，生成时序表数据以及关系表数据
 
-  可以指定数据存储路径，如 `bash generate_data.sh ./kwbase-data12`，该路径需要与start_service.sh的保持一致，如果不指定的话，默认是`./kwbase-data`
+  可以指定数据存储路径，如 `bash generate_data.sh ./kwbase-data12`，该路径需要与 `start_service.sh` 的保持一致，如果不指定的话，默认是`./kwbase-data`
 
 * 执行 `create-load.sh` 脚本，创建数据库、时序表、关系表，并将数据导入表中
 
@@ -155,7 +155,7 @@ multi-mode/
 
 ## 数据生成
 
-生成数据的脚本可以并行生成数据，也可以串行，并行模式要求环境安装GUN paraller, 如：Linux 的 Ubuntu 环境使用 `sudo apt install parallel` 命令安装。
+生成数据的脚本可以并行生成数据，也可以串行，并行模式要求环境安装 GUN paraller, 如：Linux 的 Ubuntu 环境使用 `sudo apt install parallel` 命令安装。
 
 数据生成脚本会在数据库数据目录下生成 extern 文件，然后在 extern 目录下生成一张时序表以及四张关系表的数据，脚本内写死每张表的数据行数，如果希望更大数据量，可以改脚本内的数值即可，数据量大时建议并行生成模式。
 
