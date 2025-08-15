@@ -5,11 +5,15 @@ import { recordApiCall, recordError } from '../utils/performance'
 const getBaseURL = () => {
   // 检测是否在容器环境或生产环境中
   const isProduction = import.meta.env.PROD
-  const isContainer = window.location.hostname === 'localhost' && (window.location.port === '5173' || window.location.port === '5174')
+  const hostname = window.location.hostname
+  const port = window.location.port
+  const isContainer = (hostname === 'localhost' || hostname === '127.0.0.1') && (port === '5173' || port === '5174')
   
   // 在容器环境中，前端和后端运行在不同端口，需要使用完整URL
   if (isProduction || isContainer) {
-    return 'http://localhost:3001/api'
+    // 使用当前访问的hostname来构建API URL，保持一致性
+    const apiHost = hostname === '127.0.0.1' ? '127.0.0.1' : 'localhost'
+    return `http://${apiHost}:3001/api`
   }
   
   // 开发环境中使用相对路径
