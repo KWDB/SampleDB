@@ -18,6 +18,21 @@ SampleDB 是一个用于展示示例数据与场景的项目。其核心目标�
   - [区域用电量统计](./smart-meter/scenario.md#区域用电量统计)  
   - [查询指定电表最近24小时用电趋势量](./smart-meter/scenario.md#查询指定电表最近24小时用电趋势量)
 
+
+同时，还提供了一个基于 KWDB 多模数据库的智能电表数据管理和可视化演示系统。推荐使用 docker 进行试用：
+
+```bash
+# 运行容器
+docker run -d --name smart-meter \
+  -p 5173:5173 \
+  -p 3001:3001 \
+  kwdb/smart-meter:latest
+
+# 访问应用
+# Web 界面: http://localhost:5173
+# API 服务: http://localhost:3001
+```
+
 ## 示例二：跨模查询
 
 跨模式查询（Multi-Mode Query）是指在一个查询语句中同时从多个数据库模式（如关系型数据库、时序数据库等）中获取数据，并对这些数据进行联合分析。本示例为物联网场景跨模查询，展示关系数据与时序数据的联合分析能力：

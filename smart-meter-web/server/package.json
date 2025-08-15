@@ -1,0 +1,37 @@
+{
+  "name": "smart-meter-server",
+  "version": "1.0.0",
+  "description": "智能电表网站后端API服务",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint .",
+    "check": "npm run lint && node --check index.js"
+  },
+  "dependencies": {
+    "compression": "^1.7.4",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "helmet": "^7.1.0",
+    "pg": "^8.11.3",
+    "ws": "^8.14.2"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.33.0",
+    "eslint": "^9.33.0",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^16.3.0",
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "express",
+    "kaiwudb",
+    "postgresql",
+    "api"
+  ],
+  "author": "Smart Meter Team",
+  "license": "MIT"
+}
