@@ -1,0 +1,448 @@
+/* App布局样式 */
+.app-layout {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-sider {
+  position: relative;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+}
+
+.app-content-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-content {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  background: #f0f2f5;
+}
+
+/* Logo样式 - 优化设计 */
+.logo {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(24, 144, 255, 0.2), rgba(255, 255, 255, 0.1));
+  margin: 20px 16px 24px 16px;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.logo::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+  transform: translateX(-100%);
+  transition: transform 0.6s;
+}
+
+.logo:hover {
+  background: linear-gradient(135deg, rgba(24, 144, 255, 0.3), rgba(255, 255, 255, 0.15));
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.logo:hover::before {
+  transform: translateX(100%);
+}
+
+.logo-icon {
+  font-size: 28px;
+  color: #1890ff;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.logo:hover .logo-icon {
+  transform: scale(1.1) rotate(5deg);
+  color: #40a9ff;
+}
+
+.logo-text {
+  margin-left: 12px;
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.logo:hover .logo-text {
+  color: #f0f8ff;
+  transform: translateX(2px);
+}
+
+/* 菜单切换按钮样式 - 现代化设计 */
+.menu-toggle {
+  position: absolute;
+  bottom: 20px;
+  left: 16px;
+  right: 16px;
+  z-index: 300;
+}
+
+.menu-toggle button {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.menu-toggle button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.menu-toggle button:hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  transform: translateY(-1px);
+}
+
+.menu-toggle button:hover::before {
+  left: 100%;
+}
+
+.menu-toggle button:active {
+  background: rgba(255, 255, 255, 0.25) !important;
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.menu-toggle button:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.5), 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.menu-toggle button .anticon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-toggle button:hover .anticon {
+  transform: scale(1.1);
+}
+
+/* 侧边栏收起时的菜单切换按钮样式 */
+.ant-layout-sider-collapsed .menu-toggle {
+  margin: 0 12px 20px 12px;
+}
+
+.ant-layout-sider-collapsed .menu-toggle button {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 12px !important;
+}
+
+.ant-layout-sider-collapsed .menu-toggle button:hover {
+  transform: translateY(-2px) scale(1.05);
+}
+
+/* 数据库状态指示器 - 现代化设计 */
+.db-status {
+  position: absolute;
+  bottom: 80px;
+  left: 16px;
+  right: 16px;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.05));
+  border-radius: 12px;
+  font-size: 13px;
+  z-index: 200;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.db-status:hover {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.1));
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.status-connected,
+.status-disconnected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 10px;
+  animation: pulse 2s infinite;
+  position: relative;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.status-dot::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: 50%;
+  opacity: 0.3;
+  animation: ripple 2s infinite;
+}
+
+.status-dot.success {
+  background: linear-gradient(135deg, #52c41a, #73d13d);
+}
+
+.status-dot.success::before {
+  background: #52c41a;
+}
+
+.status-dot.error {
+  background: linear-gradient(135deg, #ff4d4f, #ff7875);
+}
+
+.status-dot.error::before {
+  background: #ff4d4f;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.1;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 错误页面样式 */
+.error-container {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 24px;
+  background: #f0f2f5;
+}
+
+.error-container .ant-alert {
+  max-width: 500px;
+  width: 100%;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .app-sider {
+    position: fixed !important;
+    height: 100vh;
+    z-index: 999;
+  }
+  
+  .app-content {
+    padding: 16px;
+  }
+  
+  .logo-text {
+    display: none;
+  }
+}
+
+/* 菜单项样式增强 */
+.ant-menu-dark .ant-menu-item-selected {
+  background-color: #1890ff !important;
+}
+
+.ant-menu-dark .ant-menu-item:hover {
+  background-color: rgba(24, 144, 255, 0.2) !important;
+}
+
+/* 侧边栏收起时的样式调整 - 优化版本 */
+.ant-layout-sider-collapsed .logo {
+  margin: 20px 8px 24px 8px;
+  height: 64px;
+  border-radius: 50%;
+  justify-content: center;
+}
+
+.ant-layout-sider-collapsed .logo-text {
+  display: none;
+}
+
+.ant-layout-sider-collapsed .logo-icon {
+  font-size: 24px;
+  margin: 0;
+}
+
+.ant-layout-sider-collapsed .menu-toggle {
+  margin: 12px auto 16px auto;
+  width: 44px;
+  height: 44px;
+  justify-content: center;
+  border-radius: 50%;
+  padding: 0;
+}
+
+.ant-layout-sider-collapsed .menu-toggle .anticon {
+  font-size: 18px;
+}
+
+.ant-layout-sider-collapsed .db-status {
+  left: 8px;
+  right: 8px;
+  bottom: 76px;
+  padding: 12px 8px;
+  text-align: center;
+  border-radius: 50px;
+}
+
+.ant-layout-sider-collapsed .menu-toggle {
+  left: 8px;
+  right: 8px;
+  bottom: 16px;
+}
+
+.ant-layout-sider-collapsed .status-connected span,
+.ant-layout-sider-collapsed .status-disconnected span {
+  display: none;
+}
+
+.ant-layout-sider-collapsed .status-dot {
+  margin: 0 auto;
+  width: 12px;
+  height: 12px;
+}
+
+/* 收起状态下的动画效果 */
+.ant-layout-sider-collapsed .logo,
+.ant-layout-sider-collapsed .menu-toggle,
+.ant-layout-sider-collapsed .db-status {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+/* 收起状态下的悬停效果增强 */
+.ant-layout-sider-collapsed .logo:hover {
+  transform: translateY(-3px) scale(1.05);
+}
+
+.ant-layout-sider-collapsed .menu-toggle:hover {
+  transform: translateY(-2px) scale(1.1);
+}
+
+.ant-layout-sider-collapsed .db-status:hover {
+  transform: translateY(-3px) scale(1.02);
+}
+
+/* 滚动条样式 */
+.app-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.app-content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.app-content::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+.app-content::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* 页面切换动画 */
+.page-enter {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.page-exit {
+  opacity: 1;
+}
+
+.page-exit-active {
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: opacity 300ms, transform 300ms;
+}
