@@ -12,13 +12,11 @@ docker pull kwdb/smart-meter:latest
 
 # 运行容器
 docker run -d --name smart-meter \
-  -p 5173:5173 \
   -p 3001:3001 \
   kwdb/smart-meter:latest
 
 # 访问应用
-# Web 界面: http://localhost:5173
-# API 服务: http://localhost:3001
+# 统一访问地址: http://localhost:3001
 ```
 
 ### 方式二：本地开发部署
@@ -68,10 +66,13 @@ KWDB_SSL=false
 # 服务器配置
 PORT=3001
 NODE_ENV=development
+# 生产环境下前后端合并，开发环境可分离部署
 CLIENT_URL=http://localhost:5173
 ```
 
 4. **启动服务**
+
+**开发模式（前后端分离）：**
 ```bash
 # 启动后端服务
 cd server
@@ -80,6 +81,20 @@ npm start
 # 启动前端服务（新终端）
 cd client
 npm run dev
+
+# 访问地址
+# Web 界面: http://localhost:5173
+# API 服务: http://localhost:3001
+```
+
+**生产模式（前后端合并）：**
+```bash
+# 构建前端并启动合并服务
+npm run build:production
+npm run start:production
+
+# 访问地址
+# 统一访问: http://localhost:3001
 ```
 
 ## 🐳 Docker 构建

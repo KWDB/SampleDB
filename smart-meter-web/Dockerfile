@@ -88,11 +88,10 @@ RUN apt-get update && apt-get install -y \
     curl \
     && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
     && apt-get install -y nodejs \
-    && npm install -g serve \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# 从构建阶段复制编译后的客户端文件
+# 从构建阶段复制编译后的客户端文件到正确的目录结构
 COPY --from=client-builder /app/client/dist /app/client/dist
 
 # 从构建阶段复制服务器文件和依赖
@@ -138,37 +137,18 @@ export KWDB_PASSWORD=
 export KWDB_SSL=false
 export PORT=3001
 export NODE_ENV=production
-export CLIENT_URL=http://localhost:5173
 
-# 启动服务器
-echo "Starting smart-meter-server..."
+# 启动合并后的服务器（提供前后端服务）
+echo "Starting smart-meter unified server..."
 cd /app/server
-node index.js &
-SERVER_PID=$!
-
-# 等待服务器启动
-sleep 5
-
-# 启动客户端（使用 serve 来提供静态文件服务）
-echo "Starting smart-meter-client..."
-cd /app/client
-serve -s dist -l 5173 &
-CLIENT_PID=$!
-
-echo "All services started!"
-echo "Smart Meter Web: http://localhost:5173"
-echo "API Server: http://localhost:3001"
-echo "Note: KWDB runs internally on port 26257 (not exposed externally)"
-
-# 等待所有进程
-wait \$SERVER_PID \$CLIENT_PID
+node index.js
 EOF
 
 # 给启动脚本执行权限
 RUN chmod +x /app/start.sh
 
-# 暴露端口 - 只暴露对外服务端口，KWDB 仅供容器内部访问
-EXPOSE 5173 3001
+# 暴露端口 - 只暴露统一的服务端口，KWDB 仅供容器内部访问
+EXPOSE 3001
 
 # 设置启动命令
 CMD ["/app/start.sh"]

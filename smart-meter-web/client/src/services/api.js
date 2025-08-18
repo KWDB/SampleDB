@@ -1,19 +1,19 @@
 import axios from 'axios'
 import { recordApiCall, recordError } from '../utils/performance'
 
-// 动态设置API基础URL
-const getBaseURL = () => {
-  // 检测是否在容器环境或生产环境中
-  const isProduction = import.meta.env.PROD
-  const isContainer = window.location.hostname === 'localhost' && (window.location.port === '5173' || window.location.port === '5174')
+// 获取基础URL
+function getBaseURL() {
+  // 检查是否在开发环境中（通过Vite开发服务器访问）
+  const isDevelopment = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && 
+                       (window.location.port === '5173' || window.location.port === '5174');
   
-  // 在容器环境中，前端和后端运行在不同端口，需要使用完整URL
-  if (isProduction || isContainer) {
-    return 'http://localhost:3001/api'
+  if (isDevelopment) {
+    // 开发环境，使用localhost:3001
+    return 'http://localhost:3001/api';
+  } else {
+    // 生产环境或合并部署，使用相对路径
+    return '/api';
   }
-  
-  // 开发环境中使用相对路径
-  return '/api'
 }
 
 // 创建axios实例

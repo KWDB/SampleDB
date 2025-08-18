@@ -4,6 +4,10 @@ const helmet = require('helmet');
 const compression = require('compression');
 const WebSocket = require('ws');
 const http = require('http');
+const socketIo = require('socket.io');
+const { Pool } = require('pg');
+const fs = require('fs');
+const path = require('path');
 require('dotenv').config();
 
 const { KWDBConnection } = require('./utils/database');
@@ -22,10 +26,21 @@ app.use(cors({
     process.env.CLIENT_URL || 'http://localhost:5173',
     'http://127.0.0.1:5173',
     'http://localhost:5174',
-    'http://127.0.0.1:5174'
+    'http://127.0.0.1:5174',
+    'http://localhost:3001',
+    'http://127.0.0.1:3001'
   ],
   credentials: true
 }));
+
+// Serve static files from client build directory
+const clientBuildPath = path.join(__dirname, '../client/dist');
+if (fs.existsSync(clientBuildPath)) {
+  app.use(express.static(clientBuildPath));
+  console.log('Serving static files from:', clientBuildPath);
+} else {
+  console.log('Client build directory not found:', clientBuildPath);
+}
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -88,12 +103,19 @@ app.use((error, req, res, _next) => {
   });
 });
 
-// 404处理
-app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    message: '接口不存在'
-  });
+// SPA fallback - serve index.html for all non-API routes
+app.get('*', (req, res) => {
+  // Skip API routes and WebSocket routes
+  if (req.path.startsWith('/api') || req.path.startsWith('/ws')) {
+    return res.status(404).json({ error: 'Route not found' });
+  }
+  
+  const indexPath = path.join(clientBuildPath, 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).json({ error: 'Client build not found. Please run "npm run build" first.' });
+  }
 });
 
 const PORT = process.env.PORT || 3001;
@@ -102,6 +124,7 @@ server.listen(PORT, () => {
   console.log(`🚀 智能电表API服务器运行在端口 ${PORT}`);
   console.log(`📊 WebSocket服务已启动`);
   console.log(`🔗 客户端地址: ${process.env.CLIENT_URL || 'http://localhost:5173'}`);
+  console.log(`Frontend and backend merged on http://localhost:${PORT}`);
 });
 
 // 优雅关闭

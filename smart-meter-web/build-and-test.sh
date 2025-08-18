@@ -16,7 +16,7 @@ NC='\033[0m' # No Color
 IMAGE_NAME="smart-meter-web"
 IMAGE_TAG="latest"
 CONTAINER_NAME="smart-meter-container"
-PORTS="-p 5173:5173 -p 3001:3001"
+PORTS="-p 3001:3001"
 
 echo -e "${BLUE}=== 智能电表 Web 应用 Docker 构建和测试 ===${NC}"
 echo
@@ -132,8 +132,7 @@ show_access_info() {
     echo -e "${GREEN}=== 部署完成! ===${NC}"
     echo
     echo "应用访问地址:"
-    echo "  • 智能电表 Web 界面: http://localhost:5173"
-    echo "  • API 服务器: http://localhost:3001"
+    echo "  • 智能电表 Web 应用: http://localhost:3001"
     echo "  • KWDB 数据库: localhost:26257"
     echo
     echo "常用命令:"
