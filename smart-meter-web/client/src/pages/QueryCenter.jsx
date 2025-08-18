@@ -140,6 +140,9 @@ const QueryCenter = () => {
     // 记录最近点击的场景，用于置顶显示
     setRecentlyClickedScenario(scenario.key)
     
+    // 重置自定义SQL的mutation状态
+    executeCustomMutation.reset()
+    
     if (scenario.parameters && scenario.parameters.length > 0) {
       // 需要参数，显示参数输入模态框
       setSelectedScenario(scenario)
@@ -174,6 +177,9 @@ const QueryCenter = () => {
       message.warning('请输入SQL语句')
       return
     }
+    
+    // 重置场景查询的mutation状态
+    executeScenarioMutation.reset()
     
     executeCustomMutation.mutate({
       sql: customSql,
@@ -292,7 +298,17 @@ const QueryCenter = () => {
           >
             <Tabs 
               activeKey={activeTab} 
-              onChange={setActiveTab}
+              onChange={(key) => {
+                setActiveTab(key)
+                // 当切换到自定义SQL标签页时，重置场景查询的mutation状态
+                if (key === 'custom') {
+                  executeScenarioMutation.reset()
+                }
+                // 当切换到查询场景标签页时，重置自定义SQL的mutation状态
+                if (key === 'scenarios') {
+                  executeCustomMutation.reset()
+                }
+              }}
               items={[
                 {
                   key: 'scenarios',
