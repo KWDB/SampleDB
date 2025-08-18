@@ -5,14 +5,15 @@
   "main": "server/index.js",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "server": "cd server && npm run dev",
+    "server": "cd server && npm start",
     "client": "cd client && npm run dev",
     "build": "cd client && npm run build",
+    "build:merged": "npm run build && npm run start:merged",
     "start": "cd server && npm start",
+    "start:merged": "cd server && npm start",
+    "start:production": "npm run build && npm run start:merged",
     "install-all": "npm install && cd server && npm install && cd ../client && npm install",
-    "check": "cd server && npm run check && cd ../client && npm run check",
-    "check:server": "cd server && npm run check",
-    "check:client": "cd client && npm run check"
+    "check": "cd client && npm run build && cd ../server && npm start"
   },
   "keywords": [
     "smart-meter",

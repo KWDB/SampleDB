@@ -156,7 +156,7 @@ if [ $? -eq 0 ]; then
     done
     echo ""
     echo -e "${BLUE}使用方法:${NC}"
-    echo "  docker run -d --name smart-meter -p 5173:5173 -p 3001:3001 $IMAGE_NAME:$VERSION_TAG"
+    echo "  docker run -d --name smart-meter -p 3001:3001 $IMAGE_NAME:$VERSION_TAG"
     echo ""
     echo -e "${BLUE}验证多架构支持:${NC}"
     echo "  docker buildx imagetools inspect $IMAGE_NAME:$VERSION_TAG"
