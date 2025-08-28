@@ -56,6 +56,7 @@ router.post('/execute/:scenarioKey', async (req, res) => {
         executionTime: result.executionTime,
         totalTime,
         sql: result.sql,
+        database: result.scenario.database,
         timestamp: new Date().toISOString()
       }
     };

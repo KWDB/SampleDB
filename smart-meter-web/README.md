@@ -6,11 +6,11 @@
 
 ### 首页
 
-![系统首页](img/homepage.png)
+![系统首页](blog/img/homepage.png)
 
 ### SQL 查询
 
-![SQL查询](img/sql.png)
+![SQL查询](blog/img/sql.png)
 
 ## 📦 快速开始
 
