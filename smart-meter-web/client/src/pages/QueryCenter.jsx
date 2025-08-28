@@ -299,15 +299,41 @@ const QueryCenter = () => {
             <Tabs 
               activeKey={activeTab} 
               onChange={(key) => {
+                // 设置新的活动Tab
                 setActiveTab(key)
-                // 当切换到自定义SQL标签页时，重置场景查询的mutation状态
+                
+                // 强制重置所有查询状态，确保组件完全重新渲染
+                executeScenarioMutation.reset()
+                executeCustomMutation.reset()
+                
+                // 根据切换的Tab类型进行特定的状态清理
                 if (key === 'custom') {
-                  executeScenarioMutation.reset()
+                  // 切换到自定义SQL时的状态重置
+                  setRecentlyClickedScenario(null) // 清除场景选择状态
+                  setSelectedScenario('') // 重置选中的场景
+                  setParameterModalVisible(false) // 关闭参数模态框
+                  form.resetFields() // 重置表单字段
+                } else if (key === 'scenarios') {
+                  // 切换到查询场景时的状态重置
+                  // 保持当前的自定义SQL内容，但清除执行状态
+                  setParameterModalVisible(false) // 关闭参数模态框
+                  form.resetFields() // 重置表单字段
+                } else if (key === 'history') {
+                  // 切换到查询历史时的状态重置
+                  setRecentlyClickedScenario(null)
+                  setSelectedScenario('')
+                  setParameterModalVisible(false)
+                  form.resetFields()
+                  // 刷新查询历史数据
+                  queryClient.invalidateQueries(['query-history'])
                 }
-                // 当切换到查询场景标签页时，重置自定义SQL的mutation状态
-                if (key === 'scenarios') {
-                  executeCustomMutation.reset()
-                }
+                
+                // 强制触发组件重新渲染
+                // 通过更新一个临时状态来确保所有子组件都重新渲染
+                setTimeout(() => {
+                  // 延迟执行以确保状态更新完成后再触发重新渲染
+                  queryClient.invalidateQueries(['query-scenarios'])
+                }, 0)
               }}
               items={[
                 {
@@ -718,7 +744,8 @@ const QueryCenter = () => {
                       {queryResult.meta?.executionTime || 0}ms
                     </Tag>
                     <Tag 
-                      color="orange"
+                      color={queryResult.meta?.database === 'rdb' ? 'blue' : 
+                             queryResult.meta?.database === 'tsdb' ? 'green' : 'orange'}
                       style={{ 
                         fontSize: '11px',
                         fontWeight: 'bold',
@@ -753,7 +780,7 @@ const QueryCenter = () => {
                   <Table
                     dataSource={queryResult.data}
                     columns={getResultColumns(queryResult.data)}
-                    rowKey={(record, index) => `row-${index}-${record.id || record.meter_id || record.timestamp || Object.values(record).slice(0, 3).join('-')}`}
+                    rowKey={(record) => `row-${record.id || record.meter_id || record.timestamp || Object.values(record).slice(0, 3).join('-')}`}
                     scroll={{ x: 'max-content', y: 400 }}
                     pagination={{
                       total: queryResult?.data?.length || 0,

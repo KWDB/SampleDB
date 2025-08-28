@@ -4,8 +4,6 @@ const helmet = require('helmet');
 const compression = require('compression');
 const WebSocket = require('ws');
 const http = require('http');
-const socketIo = require('socket.io');
-const { Pool } = require('pg');
 const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
@@ -121,10 +119,9 @@ app.get('*', (req, res) => {
 const PORT = process.env.PORT || 3001;
 
 server.listen(PORT, () => {
-  console.log(`🚀 智能电表API服务器运行在端口 ${PORT}`);
+  console.log(`🚀 智能电表API服务器运行在 http://localhost:${PORT}/api/`);
   console.log(`📊 WebSocket服务已启动`);
-  console.log(`🔗 客户端地址: ${process.env.CLIENT_URL || 'http://localhost:5173'}`);
-  console.log(`Frontend and backend merged on http://localhost:${PORT}`);
+  console.log(`🔗 Frontend and backend merged on http://localhost:${PORT}`);
 });
 
 // 优雅关闭
