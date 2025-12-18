@@ -17,9 +17,6 @@
 ### 方式一：Docker 容器部署（推荐）
 
 ```bash
-# 拉取镜像
-docker pull kwdb/smart-meter:latest
-
 # 运行容器
 docker run -d --name smart-meter \
   -p 3001:3001 \
