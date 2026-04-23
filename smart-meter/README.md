@@ -13,7 +13,7 @@
 操作步骤：
 ```bash
 cd /data/kaiwudb
-mkdir extern
+mkdir extern && cd extern
 tar xvf rdb.tar.gz
 tar xvf tsdb.tar.gz
 ```
@@ -25,7 +25,7 @@ tar xvf tsdb.tar.gz
 导入 rdb 数据
 
 ```sql
-import database csv data ("nodelocal://1/rdb")；
+import database csv data ("nodelocal://1/rdb");
 ```
 
 ```sql
@@ -104,3 +104,8 @@ FROM generate_series(1, 10000) AS s;
 - [告警检测查询](./scenario.md#告警检测查询)  
 - [区域用电量统计](./scenario.md#区域用电量统计)  
 - [查询指定电表最近24小时用电趋势量](./scenario.md#查询指定电表最近24小时用电趋势量)
+- [分时负荷统计](./scenario.md#分时负荷统计)
+- [用电会话分析](./scenario.md#用电会话分析)
+- [电压状态持续分析](./scenario.md#电压状态持续分析)
+- [异常电流事件识别](./scenario.md#异常电流事件识别)
+- [滑动采样趋势分析](./scenario.md#滑动采样趋势分析)
