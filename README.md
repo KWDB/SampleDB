@@ -68,6 +68,34 @@ multi-mode/
 
 详细操作指南请参考[跨模查询文档](./multi-mode/README.md)
 
+## 示例三：窗口函数
+
+窗口函数示例展示 KWDB 对分组窗口查询的支持能力，覆盖 `COUNT_WINDOW`、`EVENT_WINDOW`、`SESSION_WINDOW`、`STATE_WINDOW` 和 `TIME_WINDOW` 五类典型窗口模型。
+
+### 文件清单
+
+```text
+window/
+    ├── start_service.sh   # 启动数据库单机服务脚本
+    ├── generate_data.sh   # 生成窗口函数示例数据
+    ├── create_load.sh     # 建库建表并导入数据
+    ├── create_load.sql    # 建库建表与导入数据 SQL
+    ├── query.sh           # 执行窗口函数示例查询
+    ├── query.sql          # 窗口函数示例 SQL
+    ├── window_test.sh     # 一键体验脚本
+    └── README.md          # 窗口函数示例说明文档
+```
+
+### 快速体验
+
+1. 执行 `window/start_service.sh` 启动数据库
+2. 执行 `window/generate_data.sh` 生成示例数据
+3. 执行 `window/create_load.sh` 建表并导入数据
+4. 执行 `window/query.sh` 体验窗口函数查询
+5. 或直接执行 `window/window_test.sh` 一键体验
+
+详细操作指南请参考[窗口函数文档](./window/README.md)
+
 ## 贡献
 
 我们欢迎任何形式的贡献！请随时提交 Issue 或 PR。
