@@ -57,16 +57,14 @@ CREATE TABLE rdb.alarm_rules(
 ### 实时用电数据表(时序表)
 
 ```sql
-CREATE TABLE tsdb.meter_data(
+CREATE TABLE tsdb.meter_data (
   ts TIMESTAMPTZ(3) NOT NULL,
   voltage FLOAT8 NULL,
   current FLOAT8 NULL,
   power FLOAT8 NULL,
-  energy FLOAT8 NULL,
-  -- meter_id VARCHAR(50)
-) TAGS(meter_id VARCHAR(50) NOT NULL)
-PRIMARY TAGS(meter_id)
-retentions 0s
-activetime 1d
-partition interval 10d;
+  energy FLOAT8 NULL
+) TAGS (
+  meter_id VARCHAR(50) NOT NULL ) PRIMARY TAGS(meter_id)
+  retentions 0s
+  activetime 1d
 ```
