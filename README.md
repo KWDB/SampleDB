@@ -96,6 +96,34 @@ window/
 
 详细操作指南请参考[窗口函数文档](./window/README.md)
 
+## 示例四：聚合函数
+
+聚合函数示例展示 KWDB 对聚合函数查询的支持能力，覆盖 `COUNT`、`AVG`、`SUM`、`MIN` 、`MAX`、`STDDEV`、`FIRST`、`LAST`、`TWA`和 `TIME_BUCKET` 多种典型聚合函数模型。
+
+### 文件清单
+
+```text
+aggregate/
+    ├── start_service.sh   # 启动数据库单机服务脚本
+    ├── generate_data.sh   # 生成聚合函数示例数据
+    ├── create_load.sh     # 建库建表并导入数据
+    ├── create_load.sql    # 建库建表与导入数据 SQL
+    ├── query.sh           # 执行聚合函数示例查询
+    ├── query.sql          # 聚合函数示例 SQL
+    ├── aggregate_test.sh     # 一键体验脚本
+    └── README.md          # 聚合函数示例说明文档
+```
+
+### 快速体验
+
+1. 执行 `aggregate/start_service.sh` 启动数据库
+2. 执行 `aggregate/generate_data.sh` 生成示例数据
+3. 执行 `aggregate/create_load.sh` 建表并导入数据
+4. 执行 `aggregate/query.sh` 体验聚合函数查询
+5. 或直接执行 `aggregate/aggregate_test.sh` 一键体验
+
+详细操作指南请参考[聚合函数文档](./aggregate/README.md)
+
 ## 贡献
 
 我们欢迎任何形式的贡献！请随时提交 Issue 或 PR。
