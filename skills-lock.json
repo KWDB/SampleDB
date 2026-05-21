@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "skills": {
+    "kwdb-install-deploy": {
+      "source": "KWDB/KaiwuDB-Agent-Skills",
+      "sourceType": "github",
+      "skillPath": "skills/kwdb-install-deploy/SKILL.md",
+      "computedHash": "2de2d564bb86d01c4cbf01a2ba7b3a200b341def2118e47fbc49b474a8c96a17"
+    },
+    "kwdb-intelligent-inspection": {
+      "source": "KWDB/KaiwuDB-Agent-Skills",
+      "sourceType": "github",
+      "skillPath": "skills/kwdb-intelligent-inspection/SKILL.md",
+      "computedHash": "5aedab56fa569a35e888f9f0d20aaf373db88cad59c0e060861ab2f4a9d46513"
+    },
+    "kwdb-text2sql-aiot": {
+      "source": "KWDB/KaiwuDB-Agent-Skills",
+      "sourceType": "github",
+      "skillPath": "skills/kwdb-text2sql-aiot/SKILL.md",
+      "computedHash": "3d8a25d6c765c7b3c25d7f523e17c0b36b8e40f8dd5e41c368fc3271157e4e07"
+    }
+  }
+}
