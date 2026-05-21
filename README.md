@@ -2,6 +2,34 @@
 
 SampleDB 是一个用于展示示例数据与场景的项目。其核心目标是助力用户快速掌握 KWDB 数据库的使用方法，为用户提供便捷的测试与学习环境。
 
+## 快速体验
+
+如果你想按当前环境快速体验 SampleDB 示例，可以直接使用 `sampledb-quickstart` skill。它会先检查环境，再根据你当前是容器部署还是本机部署来准备 KWDB，然后让你逐步选择示例和查询方式，并在每一步开始前解释它在做什么。
+
+在支持 skill 的环境中，可以直接这样发起：
+
+```text
+帮助我根据当前环境快速体验 SampleDB 示例，并解释每一步做了什么。
+```
+
+或者更简单一点：
+
+```text
+运行本示例项目。
+```
+
+这个 skill 会：
+
+- 先检查当前项目环境和是否已有 KWDB 在运行
+- 在确认后启动或复用合适的 KWDB
+- 让你选择要体验的示例，不会默认跳到某个示例
+- 在查询步骤中提供“执行完整 `query.sh`”或“只执行一个查询示例”的选择
+- 在你输入 `stop` 时清理本次创建的 `kwbase-data` 临时目录
+
+skill 在本仓库中同时提供给 `Codex` 和 `Claude` 使用。如果您使用其他 AI Agent，可以直接将 `.agents/skills/sampledb-quickstart` 复制到对应 AI Agent 的 Skill 目录中。
+
+![demo.gif](demo.gif)
+
 ## 示例一：智能电表模型
 
 - [表结构设计](./smart-meter/README.md#表结构设计)

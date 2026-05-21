@@ -20,6 +20,7 @@ dist/
 
 # Ignore temporary files
 *.tmp
+demo.cast
 
 .trae
 
