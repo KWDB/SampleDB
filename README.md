@@ -87,6 +87,7 @@ window/
     ├── create_load.sql    # 建库建表与导入数据 SQL
     ├── query.sh           # 执行窗口函数示例查询
     ├── query.sql          # 窗口函数示例 SQL
+    ├── kwdb_common.sh     # 本机与容器模式公共函数
     ├── window_test.sh     # 一键体验脚本
     └── README.md          # 窗口函数示例说明文档
 ```
@@ -98,6 +99,13 @@ window/
 3. 执行 `window/create_load.sh` 建表并导入数据
 4. 执行 `window/query.sh` 体验窗口函数查询
 5. 或直接执行 `window/window_test.sh` 一键体验
+
+容器部署的 KWDB 可直接使用容器模式：
+
+```bash
+cd window
+bash window_test.sh --container <kwdb_container_name>
+```
 
 详细操作指南请参考[窗口函数文档](./window/README.md)
 
