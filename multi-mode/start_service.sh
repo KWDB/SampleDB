@@ -1,14 +1,41 @@
 #!/bin/bash
 
-# 默认参数
-DEFAULT_LISTEN_PORT="11223"
-DEFAULT_HTTP_PORT="8892"
-DEFAULT_STORE="./kwbase-data"
+set -e
 
-# 如果有传入参数，就使用传入的参数，否则使用默认参数
-LISTEN_ADDR=${1:-$DEFAULT_LISTEN_PORT}
-HTTP_ADDR=${2:-$DEFAULT_HTTP_PORT}
-STORE=${3:-$DEFAULT_STORE}
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+# shellcheck source=multi-mode/kwdb_common.sh
+source "$SCRIPT_DIR/kwdb_common.sh"
 
-# 执行命令
-./kwbase start-single-node --insecure --listen-addr=127.0.0.1:$LISTEN_ADDR --http-addr=127.0.0.1:$HTTP_ADDR --store=$STORE --background
+usage() {
+  cat <<EOF
+用法:
+  bash start_service.sh [listen_port] [http_port] [store]
+  bash start_service.sh [--port listen_port] [--http-port http_port] [--store store]
+  bash start_service.sh --container <container_name> [--port container_sql_port]
+
+说明:
+  裸机模式会启动当前目录下的 ./kwbase。
+  容器模式要求 KWDB 容器已经启动，本脚本只检查容器状态，不在容器内启动数据库。
+EOF
+}
+
+kwdb_parse_options "$@"
+
+if [ "$KWDB_SHOW_HELP" = "1" ]; then
+  usage
+  exit 0
+fi
+
+kwdb_apply_positional_port
+kwdb_apply_positional_http_port
+kwdb_apply_positional_store
+kwdb_set_default_sql_port
+kwdb_set_default_http_port
+
+if [ "$KWDB_MODE" = "container" ]; then
+  kwdb_ensure_container_ready
+  echo "容器 $KWDB_CONTAINER_NAME 已运行，请确认容器内 KWDB 服务已启动，SQL 端口为 $KWDB_SQL_PORT"
+  exit 0
+fi
+
+"$KWDB_KWBASE_BIN" start-single-node --insecure --listen-addr="$KWDB_SQL_HOST:$KWDB_SQL_PORT" --http-addr="$KWDB_SQL_HOST:$KWDB_HTTP_PORT" --store="$KWDB_HOST_STORE" --background

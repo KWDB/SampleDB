@@ -18,6 +18,12 @@
       "sourceType": "github",
       "skillPath": "skills/kwdb-text2sql-aiot/SKILL.md",
       "computedHash": "3d8a25d6c765c7b3c25d7f523e17c0b36b8e40f8dd5e41c368fc3271157e4e07"
+    },
+    "skill-creator": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/skill-creator/SKILL.md",
+      "computedHash": "5ea13a6d9f0d4bb694405d79acd00cadec0d21bb138c4dd10fcf3c500cb835c2"
     }
   }
 }

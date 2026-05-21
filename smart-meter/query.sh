@@ -3,7 +3,7 @@
 set -e
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-# shellcheck source=multi-mode/kwdb_common.sh
+# shellcheck source=smart-meter/kwdb_common.sh
 source "$SCRIPT_DIR/kwdb_common.sh"
 
 usage() {
