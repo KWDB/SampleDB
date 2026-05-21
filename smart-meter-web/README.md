@@ -26,6 +26,11 @@ docker run -d --name smart-meter \
 # 统一访问地址: http://localhost:3001
 ```
 
+KWDB 提供了多种容器镜像下载渠道，用户可以根据当前网络环境选择合适的镜像。
+- 官方仓库：`kwdb/smart-meter`
+- 国内镜像：`registry.cn-hangzhou.aliyuncs.com/kwdb/smart-meter`
+- Github 容器镜像：`ghcr.io/kwdb/smart-meter`
+
 ### 方式二：本地开发部署
 
 #### 前置要求

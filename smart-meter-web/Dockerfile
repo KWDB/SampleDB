@@ -29,7 +29,10 @@ RUN npm ci --only=production
 # 复制服务器源代码
 COPY smart-meter-web/server/ ./
 
-# 第三阶段：创建包含数据的KWDB镜像
+# 第三阶段：准备 Node.js 运行时
+FROM node:18-bullseye-slim AS node-runtime
+
+# 第四阶段：创建包含数据的KWDB镜像
 FROM kwdb/kwdb:latest AS kwdb-with-data
 
 # 复制数据文件到容器中
@@ -77,19 +80,14 @@ echo "Data import stage finished!"' > /import-data.sh && chmod +x /import-data.s
 # 执行数据导入
 RUN /import-data.sh
 
-# 第四阶段：最终运行镜像
+# 第五阶段：最终运行镜像
 FROM kwdb/kwdb:latest
 
 # 设置工作目录
 WORKDIR /app
 
-# 安装 Node.js 和必要工具
-RUN apt-get update && apt-get install -y \
-    curl \
-    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
-    && apt-get install -y nodejs \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# 从 Node 官方镜像复制运行时，避免最终镜像构建时依赖 apt 源
+COPY --from=node-runtime /usr/local/bin/node /usr/local/bin/node
 
 # 从构建阶段复制编译后的客户端文件到正确的目录结构
 COPY --from=client-builder /app/client/dist /app/client/dist

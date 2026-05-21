@@ -35,6 +35,11 @@ docker run -d --name smart-meter \
 # 统一访问地址: http://localhost:3001
 ```
 
+KWDB 提供了多种容器镜像下载渠道，用户可以根据当前网络环境选择合适的镜像。
+- 官方仓库：`kwdb/smart-meter`
+- 国内镜像：`registry.cn-hangzhou.aliyuncs.com/kwdb/smart-meter`
+- Github 容器镜像：`ghcr.io/kwdb/smart-meter`
+
 ## 示例二：跨模查询
 
 跨模式查询（Multi-Mode Query）是指在一个查询语句中同时从多个数据库模式（如关系型数据库、时序数据库等）中获取数据，并对这些数据进行联合分析。本示例为物联网场景跨模查询，展示关系数据与时序数据的联合分析能力：
