@@ -1,9 +1,26 @@
 #!/bin/bash
 
-# 默认参数
-DEFAULT_LISTEN_PORT="11223"
+set -e
 
-# 如果有传入参数，就使用传入的参数，否则使用默认参数
-LISTEN_ADDR=${1:-$DEFAULT_LISTEN_PORT}
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+# shellcheck source=multi-mode/kwdb_common.sh
+source "$SCRIPT_DIR/kwdb_common.sh"
 
-./kwbase sql --insecure --host=127.0.0.1:$LISTEN_ADDR < query.sql
+usage() {
+  cat <<EOF
+用法:
+  bash query.sh [listen_port]
+  bash query.sh [--port listen_port] [--host host] [--kwbase-bin kwbase_path]
+  bash query.sh --container <container_name> [--port container_sql_port]
+EOF
+}
+
+kwdb_parse_options "$@"
+
+if [ "$KWDB_SHOW_HELP" = "1" ]; then
+  usage
+  exit 0
+fi
+
+kwdb_apply_positional_port
+kwdb_run_sql_file "$SCRIPT_DIR/query.sql"

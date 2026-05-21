@@ -1,6 +1,35 @@
 #!/bin/bash
 
-DEFAULT_LISTEN_PORT="11223"
-LISTEN_ADDR=${1:-$DEFAULT_LISTEN_PORT}
+set -e
 
-./kwbase sql --insecure --host=127.0.0.1:$LISTEN_ADDR < create_load.sql
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+# shellcheck source=aggregate/kwdb_common.sh
+source "$SCRIPT_DIR/kwdb_common.sh"
+
+usage() {
+  cat <<EOF
+用法:
+  bash create_load.sh [listen_port]
+  bash create_load.sh [--port listen_port] [--host host] [--kwbase-bin kwbase_path]
+  bash create_load.sh --container <container_name> [--port container_sql_port] [--data-path local_data_path] [--container-store container_store]
+
+说明:
+  容器模式会先将 local_data_path/extern/sensors 复制到容器的 KWDB 数据目录下，
+  再执行 create_load.sql 导入 nodelocal://1/sensors 数据。
+EOF
+}
+
+kwdb_parse_options "$@"
+
+if [ "$KWDB_SHOW_HELP" = "1" ]; then
+  usage
+  exit 0
+fi
+
+kwdb_apply_positional_port
+
+if [ "$KWDB_MODE" = "container" ]; then
+  kwdb_copy_aggregate_data_to_container
+fi
+
+kwdb_run_sql_file "$SCRIPT_DIR/create_load.sql"

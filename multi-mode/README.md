@@ -26,33 +26,26 @@ KWDB的跨模查询主要包含以下三项技术：
 multi-mode/
     ├── start_service.sh   # 启动数据库单机服务脚本
     ├── generate_data.sh   # 数据生成脚本，
-    ├── create-load.sh     # 创建数据库，创建表以及导入数据的脚本 
-    ├── create-load.sql    # 创建数据库，创建表以及导入数据的SQL命令
+    ├── create_load.sh     # 创建数据库，创建表以及导入数据的脚本 
+    ├── create_load.sql    # 创建数据库，创建表以及导入数据的SQL命令
     ├── query.sh           # 跨模查询的脚本
     ├── query.sql          # 跨模查询的SQL命令
+    ├── kwdb_common.sh     # 本机与容器模式公共函数
     ├── multi_test.sh      # 一键测试的脚本
     └── README.md          # 跨模查询测试介绍文档
 ```
 
-**注：本项目的脚本仅在 linux 系统执行**
+**注：脚本依赖 Bash。本机部署模式适用于 Linux 环境；容器部署模式依赖 Docker CLI，并要求 KWDB 容器已经运行。**
 
 ## 操作步骤
+
+### 本机部署模式
 
 * 将上述文件清单中的脚本以及 SQL 文件移至 KWDB 二进制目录下方
 * 执行 `start_service.sh` 脚本，启动数据库单机服务(如已启动请忽略本步骤)
 
   ```bash
-  #!/bin/bash
-
-  DEFAULT_LISTEN_PORT="11223"
-  DEFAULT_HTTP_PORT="8892"
-  DEFAULT_STORE="./kwbase-data"
-
-  LISTEN_ADDR=${1:-$DEFAULT_LISTEN_PORT}
-  HTTP_ADDR=${2:-$DEFAULT_HTTP_PORT}
-  STORE=${3:-$DEFAULT_STORE}
-
-  ./kwbase start-single-node --insecure --listen-addr=127.0.0.1:$LISTEN_ADDR --http-addr=127.0.0.1:$HTTP_ADDR --store=$STORE --background
+  bash start_service.sh
   ```
 
   > 注：如果启动时候 `--listen-addr` 服务监听端口以及 `--http-addr` admin UI 的端口被占用的话，需要重新指定，如：`bash start_service.sh 11221 8008 ./kwbase-data12`，参数1是服务监听端口，参数2是 admin UI 端口，参数3是数据保存目录</p>
@@ -61,33 +54,73 @@ multi-mode/
 
   可以指定数据存储路径，如 `bash generate_data.sh ./kwbase-data12`，该路径需要与 `start_service.sh` 的保持一致，如果不指定的话，默认是`./kwbase-data`
 
-* 执行 `create-load.sh` 脚本，创建数据库、时序表、关系表，并将数据导入表中
+* 执行 `create_load.sh` 脚本，创建数据库、时序表、关系表，并将数据导入表中
 
   ```bash
-  #!/bin/bash
-
-  DEFAULT_LISTEN_PORT="11223"
-  LISTEN_ADDR=${1:-$DEFAULT_LISTEN_PORT}
-
-  ./kwbase sql --insecure --host=127.0.0.1:$LISTEN_ADDR < create_load.sql
+  bash create_load.sh
   ```
 
-  > 注：如果监听端口被占用了，需要重新指定，如：`bash create-load.sh 11221`，该端口必须与 `start_service.sh` 的监听端口保持一致
+  > 注：如果监听端口被占用了，需要重新指定，如：`bash create_load.sh 11221`，该端口必须与 `start_service.sh` 的监听端口保持一致
 
 * 执行 `query.sh` 脚本，体验跨模查询
 
   ```bash
-  #!/bin/bash
-
-  DEFAULT_LISTEN_·PORT="11223"
-  LISTEN_ADDR=${1:-$DEFAULT_LISTEN_PORT}
-
-  ./kwbase sql --insecure --host=127.0.0.1:$LISTEN_ADDR < query.sql
+  bash query.sh
   ```
 
   > 注：如果监听端口被占用了，需要重新指定，如：`bash query.sh 11221`，该端口必须与 `start_service.sh` 的监听端口保持一致
 
 **Tips：可以直接执行 `multi_test.sh` 脚本，一键体验**
+
+### 容器部署模式
+
+适用于 KWDB 已经通过 Docker 容器部署并运行的场景。容器模式会：
+
+1. 通过 `docker cp` 将本地生成的 `extern` 数据目录复制到容器内 KWDB 数据目录。
+2. 通过 `docker exec` 调用容器内的 `kwbase sql` 执行建表导入与查询。
+
+默认参数如下：
+
+| 参数 | 默认值 | 说明 |
+|---|---:|---|
+| `--port` | `26257` | 容器内 KWDB SQL 端口 |
+| `--container-store` | 自动识别 `kwbase start` 的 `--store`，识别失败时使用 `/kwdb-data` | 容器内 KWDB 数据目录 |
+| `--container-kwbase` | `/kaiwudb/bin/kwbase` | 容器内 `kwbase` 路径 |
+| `--data-path` | `kwbase-data` | 本地生成示例数据的目录 |
+
+如果使用默认参数，可以直接执行：
+
+```bash
+cd multi-mode
+bash generate_data.sh ./kwbase-data
+bash create_load.sh --container <kwdb_container_name>
+bash query.sh --container <kwdb_container_name>
+```
+
+如果容器内端口、数据目录或 `kwbase` 路径不同，可以显式指定：
+
+```bash
+bash create_load.sh \
+  --container <kwdb_container_name> \
+  --port 26257 \
+  --container-store /kwdb-data \
+  --container-kwbase /kaiwudb/bin/kwbase \
+  --data-path ./kwbase-data
+
+bash query.sh \
+  --container <kwdb_container_name> \
+  --port 26257 \
+  --container-kwbase /kaiwudb/bin/kwbase
+```
+
+容器部署也支持一键体验：
+
+```bash
+cd multi-mode
+bash multi_test.sh --container <kwdb_container_name>
+```
+
+> 注：容器模式不会创建或启动 Docker 容器，请先使用项目实际的 KWDB 镜像启动容器，并确认容器内 KWDB 服务已可用。
 
 ## 表结构设计
 

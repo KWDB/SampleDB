@@ -1,0 +1,4 @@
+interface:
+  display_name: "SampleDB Quickstart"
+  short_description: "Interactively guide SampleDB demos across host and container KWDB deployments."
+  default_prompt: "请先检查当前 SampleDB 项目环境；如果发现已有 KWDB 在运行，先询问我是否可以使用；如需启动 KWDB，请说明部署方式并启动。KWDB 准备好后询问我要体验哪个示例，不要默认选择；示例中的每一步执行前都先解释用途、影响范围和成功标准，并征求确认；进入查询步骤时，提供运行完整 query.sh 或选择单个查询示例的选项，并说明每个查询示例展示的能力；示例结束后总结并回到示例选择；当我输入 stop 结束时，清理本次创建的 kwbase-data 临时目录。"
