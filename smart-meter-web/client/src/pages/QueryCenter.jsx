@@ -55,7 +55,62 @@ const QueryCenter = () => {
       tsdb: [
         { value: "SELECT * FROM tsdb.meter_data ORDER BY ts DESC LIMIT 10;", label: "查看最新电表数据" },
         { value: "SELECT \n  md.meter_id,\n  md.ts,\n  md.voltage,\n  md.current,\n  md.power\nFROM tsdb.meter_data md\nWHERE md.meter_id = 'M1'\n  AND md.ts > NOW() - INTERVAL '24 hours'\nORDER BY md.ts;", label: "电表24小时趋势" },
-        { value: "SELECT \n  meter_id,\n  AVG(power) as avg_power,\n  MAX(power) as max_power,\n  MIN(power) as min_power\nFROM tsdb.meter_data\nWHERE ts > NOW() - INTERVAL '1 hour'\nGROUP BY meter_id;", label: "电表功率统计" }
+        { value: "SELECT \n  meter_id,\n  AVG(power) as avg_power,\n  MAX(power) as max_power,\n  MIN(power) as min_power\nFROM tsdb.meter_data\nWHERE ts > NOW() - INTERVAL '1 hour'\nGROUP BY meter_id;", label: "电表功率统计" },
+        { value: `SELECT
+  meter_id,
+  time_bucket(ts, '1h') AS bucket_start,
+  COUNT(*) AS sample_count,
+  AVG(power) AS avg_power,
+  MAX(power) AS max_power
+FROM tsdb.meter_data
+WHERE meter_id IN ('M1', 'M2', 'M3')
+GROUP BY meter_id, bucket_start
+ORDER BY meter_id, bucket_start;`, label: "分时负荷统计" },
+        { value: `SELECT
+  meter_id,
+  first(ts) AS session_start,
+  last(ts) AS session_end,
+  COUNT(*) AS sample_count,
+  SUM(energy) AS total_energy
+FROM tsdb.meter_data
+WHERE meter_id = 'M1'
+GROUP BY meter_id, session_window(ts, '30m')
+ORDER BY session_start;`, label: "用电会话分析" },
+        { value: `SELECT
+  meter_id,
+  first(ts) AS window_start,
+  last(ts) AS window_end,
+  COUNT(*) AS sample_count,
+  MIN(voltage) AS min_voltage,
+  MAX(voltage) AS max_voltage
+FROM tsdb.meter_data
+WHERE meter_id = 'M1'
+GROUP BY
+  meter_id,
+  state_window(CASE WHEN voltage >= 225 THEN 'high' ELSE 'low' END)
+ORDER BY window_start;`, label: "电压状态持续分析" },
+        { value: `SELECT
+  meter_id,
+  first(ts) AS event_start,
+  last(ts) AS event_end,
+  COUNT(*) AS sample_count,
+  MAX(current) AS peak_current,
+  AVG(power) AS avg_power
+FROM tsdb.meter_data
+WHERE meter_id = 'M1'
+GROUP BY meter_id, event_window(current >= 6, current <= 5.3)
+ORDER BY event_start;`, label: "异常电流事件识别" },
+        { value: `SELECT
+  meter_id,
+  first(ts) AS window_start,
+  last(ts) AS window_end,
+  COUNT(*) AS sample_count,
+  AVG(power) AS avg_power,
+  MAX(power) AS max_power
+FROM tsdb.meter_data
+WHERE meter_id = 'M1'
+GROUP BY meter_id, count_window(12, 6)
+ORDER BY window_start;`, label: "滑动采样趋势分析" }
       ],
       mixed: [
         { value: "SELECT \n  a.area_name,\n  SUM(md.energy) AS total_energy\nFROM tsdb.meter_data md\nJOIN rdb.meter_info mi ON md.meter_id = mi.meter_id\nJOIN rdb.area_info a ON mi.area_id = a.area_id\nGROUP BY a.area_name\nORDER BY total_energy DESC\nLIMIT 10;", label: "区域用电量TOP10" },
@@ -780,7 +835,7 @@ const QueryCenter = () => {
                   <Table
                     dataSource={queryResult.data}
                     columns={getResultColumns(queryResult.data)}
-                    rowKey={(record) => `row-${record.id || record.meter_id || record.timestamp || Object.values(record).slice(0, 3).join('-')}`}
+                    rowKey={(record, index) => `row-${index}-${record.id || record.meter_id || record.timestamp || Object.values(record).slice(0, 3).join('-')}`}
                     scroll={{ x: 'max-content', y: 400 }}
                     pagination={{
                       total: queryResult?.data?.length || 0,
