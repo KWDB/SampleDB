@@ -1,7 +1,6 @@
 import React from 'react'
-import { Spin, Alert } from 'antd'
-import { LoadingOutlined } from '@ant-design/icons'
 import { recordError } from '../utils/performance'
+import { Alert, Spinner } from './ui'
 
 // 自定义加载组件
 export const LoadingSpinner = ({ size = 'large', tip = '加载中...' }) => (
@@ -13,10 +12,7 @@ export const LoadingSpinner = ({ size = 'large', tip = '加载中...' }) => (
     flexDirection: 'column',
     gap: '16px'
   }}>
-    <Spin 
-      size={size} 
-      indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />}
-    />
+    <Spinner size={size === 'large' ? 'large' : 'middle'} />
     <span style={{ color: '#666', fontSize: '14px' }}>{tip}</span>
   </div>
 )

@@ -18,6 +18,8 @@ smart-meter-web/.dev/
 smart-meter-web/.claude/
 smart-meter-web/.codex/
 
+smart-meter-web/.impeccable
+
 # Ignore log files
 *.log
 

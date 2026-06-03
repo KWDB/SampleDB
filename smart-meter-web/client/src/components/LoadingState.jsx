@@ -1,11 +1,5 @@
 import React from 'react'
-import { Spin, Card, Space, Typography, Progress } from 'antd'
-import { LoadingOutlined } from '@ant-design/icons'
-
-const { Text } = Typography
-
-// 自定义加载图标
-const customLoadingIcon = <LoadingOutlined style={{ fontSize: 24 }} spin />
+import { Card, Space, Spinner, Text } from './ui'
 
 // 基础加载组件（内部使用）
 const BasicLoading = ({ 
@@ -15,14 +9,15 @@ const BasicLoading = ({
   children 
 }) => {
   return (
-    <Spin 
-      size={size} 
-      tip={tip} 
-      spinning={spinning}
-      indicator={customLoadingIcon}
-    >
+    <div aria-busy={spinning || undefined}>
+      {spinning && (
+        <Space size="small">
+          <Spinner size={size === 'large' ? 'large' : 'middle'} />
+          <Text type="secondary">{tip}</Text>
+        </Space>
+      )}
       {children}
-    </Spin>
+    </div>
   )
 }
 
@@ -42,7 +37,7 @@ const FullScreenLoading = ({ tip = '正在加载，请稍候...' }) => {
       zIndex: 9999
     }}>
       <Space direction="vertical" align="center" size="large">
-        <Spin size="large" indicator={customLoadingIcon} />
+        <Spinner size="large" />
         <Text type="secondary">{tip}</Text>
       </Space>
     </div>
@@ -64,7 +59,7 @@ const CardLoading = ({
         justifyContent: 'center',
         flexDirection: 'column'
       }}>
-        <Spin size="large" indicator={customLoadingIcon} />
+        <Spinner size="large" />
         <Text type="secondary" style={{ marginTop: '16px' }}>
           {tip}
         </Text>
@@ -84,7 +79,7 @@ const ProgressLoading = ({
     <div style={{ padding: '24px' }}>
       <Space direction="vertical" style={{ width: '100%' }} size="large">
         <div style={{ textAlign: 'center' }}>
-          <Spin size="large" indicator={customLoadingIcon} />
+          <Spinner size="large" />
           <div style={{ marginTop: '16px' }}>
             <Text strong>{title}</Text>
             {description && (
@@ -94,14 +89,7 @@ const ProgressLoading = ({
             )}
           </div>
         </div>
-        <Progress 
-          percent={percent} 
-          status={status}
-          strokeColor={{
-            '0%': '#108ee9',
-            '100%': '#87d068',
-          }}
-        />
+        <progress className={`ui-progress ui-progress-${status}`} value={percent} max="100" />
       </Space>
     </div>
   )
@@ -118,7 +106,7 @@ const DataLoading = ({
       textAlign: 'center'
     }}>
       <Space direction="vertical" size="middle">
-        <Spin size={size} indicator={customLoadingIcon} />
+        <Spinner size={size === 'large' ? 'large' : 'middle'} />
         <Text type="secondary">{message}</Text>
       </Space>
     </div>
@@ -138,7 +126,7 @@ const ChartLoading = ({ height = 300 }) => {
       borderRadius: '6px'
     }}>
       <Space direction="vertical" align="center">
-        <Spin size="large" indicator={customLoadingIcon} />
+        <Spinner size="large" />
         <Text type="secondary">图表加载中...</Text>
       </Space>
     </div>
@@ -151,7 +139,7 @@ const TableLoading = ({ rows = 5 }) => {
     <div style={{ padding: '20px' }}>
       <Space direction="vertical" style={{ width: '100%' }} size="middle">
         <div style={{ textAlign: 'center' }}>
-          <Spin indicator={customLoadingIcon} />
+          <Spinner />
           <Text type="secondary" style={{ marginLeft: '8px' }}>
             正在加载表格数据...
           </Text>
@@ -186,7 +174,7 @@ const PageLoading = ({
       justifyContent: 'center'
     }}>
       <Space direction="vertical" align="center" size="large">
-        <Spin size="large" indicator={customLoadingIcon} />
+        <Spinner size="large" />
         <div style={{ textAlign: 'center' }}>
           <Text strong style={{ fontSize: '16px' }}>{tip}</Text>
           <br />
