@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
-import { Layout, Menu, theme, Spin, App as AntdApp } from 'antd'
+import React, { useEffect, useCallback } from 'react'
+import { Routes, Route, Navigate, NavLink, useLocation } from 'react-router-dom'
 import {
-  DatabaseOutlined,
-  SearchOutlined,
-  ThunderboltOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined
-} from '@ant-design/icons'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+  AlertTriangle,
+  CheckCircle2,
+  CircleX,
+  Database,
+  Search,
+  Zap
+} from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 import { api } from './services/api'
 // 使用懒加载组件替代直接导入
 import {
@@ -20,194 +20,172 @@ import { useNetworkStatus } from './hooks/useNetworkStatus'
 
 import ErrorBoundary from './components/ErrorBoundary'
 import { NetworkWrapper } from './components/OfflineSupport'
-
-
+import { Spinner } from './components/ui'
 
 import './App.css'
 
-const { Sider, Content } = Layout
-
 function App() {
-  const [collapsed, setCollapsed] = useState(false)
-  const [selectedKey, setSelectedKey] = useState('database')
-  const navigate = useNavigate()
   const location = useLocation()
   const { isOnline } = useNetworkStatus()
   const { preloadRoute } = useSmartPreload(['/query', '/database'])
-  const {
-    token: { colorBgContainer },
-  } = theme.useToken()
 
   // 检查数据库连接状态 - 设置为可选，不阻塞页面渲染
-  const { data: dbStatus, isLoading: dbLoading, error: dbError } = useQuery({
+  const {
+    data: dbStatus,
+    isLoading: dbLoading,
+    isFetching: dbFetching,
+    error: dbError,
+    refetch: refetchDatabaseStatus
+  } = useQuery({
     queryKey: ['database-status'],
     queryFn: api.database.getStatus,
     refetchInterval: 30000, // 每30秒检查一次
     retry: 1, // 减少重试次数
-    enabled: false, // 默认不启用，避免阻塞页面
+    enabled: isOnline, // 在线时立即检查，查询不会阻塞页面渲染
     refetchOnWindowFocus: false,
     staleTime: 60000, // 1分钟内不重复请求
   })
 
-  // 菜单项配置
-  const menuItems = [
+  const activeKey = location.pathname.includes('/query') ? 'query' : 'database'
+
+  // 顶部学习路径配置
+  const navigationItems = [
     {
       key: 'database',
-      icon: <DatabaseOutlined />,
+      icon: <Database size={16} />,
       label: '概览',
-      style: { textAlign: 'center' },
+      path: '/',
     },
     {
       key: 'query',
-      icon: <SearchOutlined />,
-      label: '示例SQL查询',
-      style: { textAlign: 'center' },
+      icon: <Search size={16} />,
+      label: '示例 SQL 查询',
+      path: '/query',
     },
-
   ]
 
-  // 根据路径设置选中的菜单项并智能预加载
+  const getShellStatus = () => {
+    if (!isOnline) {
+      return {
+        className: 'warning',
+        icon: <AlertTriangle size={15} />,
+        title: '离线模式',
+        detail: '网络不可用'
+      }
+    }
+
+    if (dbLoading || dbFetching) {
+      return {
+        className: 'pending',
+        icon: <Spinner size="small" />,
+        title: '检查连接',
+        detail: '正在读取 KWDB 状态'
+      }
+    }
+
+    if (dbStatus?.data?.connected) {
+      return {
+        className: 'success',
+        icon: <CheckCircle2 size={15} />,
+        title: 'KWDB 已连接',
+        detail: 'RDB 与 TSDB 可用'
+      }
+    }
+
+    if (dbError) {
+      return {
+        className: 'error',
+        icon: <CircleX size={15} />,
+        title: '连接失败',
+        detail: '点击重试'
+      }
+    }
+
+    return {
+      className: 'warning',
+      icon: <AlertTriangle size={15} />,
+      title: '未检查连接',
+      detail: '点击检查'
+    }
+  }
+
+  const shellStatus = getShellStatus()
+
+  // 根据当前路径智能预加载另一条学习路径
   useEffect(() => {
-    const path = location.pathname
-    if (path.includes('/query')) {
-      setSelectedKey('query')
-      // 预加载可能访问的其他页面
+    if (activeKey === 'query') {
       preloadRoute('/database')
     } else {
-      setSelectedKey('database')
-      // 预加载最常访问的页面
       preloadRoute('/query')
     }
-  }, [location.pathname, preloadRoute])
-
-  const queryClient = useQueryClient()
+  }, [activeKey, preloadRoute])
 
   // 手动触发数据库状态检查
   const checkDatabaseStatus = useCallback(() => {
-    // 手动启用并重新获取数据库状态
-    queryClient.invalidateQueries({ queryKey: ['database-status'] })
-    queryClient.refetchQueries({ queryKey: ['database-status'] })
-  }, [queryClient])
-
-  // 在组件挂载时尝试检查数据库状态（非阻塞）
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      checkDatabaseStatus()
-    }, 1000) // 延迟1秒后检查，确保页面已渲染
-    
-    return () => clearTimeout(timer)
-  }, [checkDatabaseStatus])
+    refetchDatabaseStatus()
+  }, [refetchDatabaseStatus])
 
   return (
     <ErrorBoundary>
       <NetworkWrapper>
-        <AntdApp>
-          <Layout className="app-layout">
-      {/* 侧边栏 */}
-      <Sider 
-        collapsed={collapsed} 
-        theme="dark"
-        width={250}
-        className="app-sider"
-      >
-        <div className="logo">
-          <ThunderboltOutlined className="logo-icon" />
-          {!collapsed && <span className="logo-text">智能电表示例</span>}
+        <div className="app-layout">
+          <header className="app-header">
+            <div className="app-header-inner">
+              <NavLink to="/" className="app-brand" aria-label="打开智能电表示例概览">
+                <span className="app-brand-mark" aria-hidden="true">
+                  <Zap className="app-brand-icon" size={16} />
+                </span>
+                <span className="app-brand-copy">
+                  <span className="app-brand-title">智能电表示例</span>
+                  <span className="app-brand-subtitle">KWDB Sample</span>
+                </span>
+              </NavLink>
+
+              <nav className="app-top-nav" aria-label="学习路径">
+                {navigationItems.map(item => {
+                  const isSelected = activeKey === item.key
+                  const preloadPath = item.key === 'database' ? '/database' : item.path
+
+                  return (
+                    <NavLink
+                      key={item.key}
+                      to={item.path}
+                      end={item.key === 'database'}
+                      className={`app-nav-item ${isSelected ? 'is-selected' : ''}`}
+                      aria-current={isSelected ? 'page' : undefined}
+                      onMouseEnter={() => preloadRoute(preloadPath)}
+                      onFocus={() => preloadRoute(preloadPath)}
+                    >
+                      <span className="app-nav-icon" aria-hidden="true">{item.icon}</span>
+                      <span className="app-nav-label">{item.label}</span>
+                    </NavLink>
+                  )
+                })}
+              </nav>
+
+              <button
+                type="button"
+                className={`db-status db-status-${shellStatus.className}`}
+                onClick={checkDatabaseStatus}
+                aria-label={`${shellStatus.title}，${shellStatus.detail}`}
+              >
+                <span className="db-status-icon" aria-hidden="true">{shellStatus.icon}</span>
+                <span className="db-status-copy">
+                  <span className="db-status-title">{shellStatus.title}</span>
+                  <span className="db-status-detail">{shellStatus.detail}</span>
+                </span>
+              </button>
+            </div>
+          </header>
+
+          <main className="app-content">
+            <Routes>
+              <Route path="/" element={<LazyDatabaseManagement />} />
+              <Route path="/query" element={<LazyQueryCenter />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </main>
         </div>
-        
-        <Menu
-          theme="dark"
-          selectedKeys={[selectedKey]}
-          mode="inline"
-          items={menuItems}
-          onClick={({ key }) => {
-            setSelectedKey(key)
-            // React Router导航
-            const routes = {
-              database: '/',
-              query: '/query',
-
-            }
-            navigate(routes[key])
-          }}
-        />
-        
-        {/* 数据库状态指示器 */}
-        <div className="db-status">
-          {!isOnline ? (
-            <div className="status-offline">
-              <div className="status-dot warning" />
-              <span>离线模式</span>
-            </div>
-          ) : dbLoading ? (
-            <div className="status-connecting">
-              <Spin size="small" />
-              <span>检查中...</span>
-            </div>
-          ) : dbStatus?.data?.connected ? (
-            <div className="status-connected">
-              <div className="status-dot success" />
-              <span>KWDB已连接</span>
-            </div>
-          ) : dbError ? (
-            <div className="status-disconnected" onClick={checkDatabaseStatus} style={{ cursor: 'pointer' }}>
-              <div className="status-dot error" />
-              <span>点击重试</span>
-            </div>
-          ) : (
-            <div className="status-unknown" onClick={checkDatabaseStatus} style={{ cursor: 'pointer' }}>
-              <div className="status-dot warning" />
-              <span>点击检查</span>
-            </div>
-          )}
-        </div>
-        
-        {/* 菜单切换按钮 - 移动到底部 */}
-        <div className="menu-toggle">
-          <button
-            type="button"
-            className="ant-btn ant-btn-text ant-btn-icon-only"
-            onClick={() => setCollapsed(!collapsed)}
-            style={{
-              fontSize: '16px',
-              width: '100%',
-              height: '48px',
-              color: '#fff',
-              border: 'none',
-              background: 'transparent',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginTop: '16px'
-            }}
-          >
-            {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-          </button>
-        </div>
-      </Sider>
-
-      {/* 主内容区 */}
-      <Layout className="app-content-layout">
-
-        
-        {/* 内容区域 */}
-        <Content
-          className="app-content"
-          style={{
-            background: colorBgContainer,
-          }}
-        >
-          <Routes>
-            <Route path="/" element={<LazyDatabaseManagement />} />
-            <Route path="/query" element={<LazyQueryCenter />} />
-
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Content>
-      </Layout>
-          </Layout>
-        </AntdApp>
       </NetworkWrapper>
     </ErrorBoundary>
   )

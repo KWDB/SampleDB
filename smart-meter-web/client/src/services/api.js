@@ -5,7 +5,7 @@ import { recordApiCall, recordError } from '../utils/performance'
 function getBaseURL() {
   // 检查是否在开发环境中（通过Vite开发服务器访问）
   const isDevelopment = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && 
-                       (window.location.port === '5173' || window.location.port === '5174');
+                       (window.location.port === '3002' || window.location.port === '5173' || window.location.port === '5174');
   
   if (isDevelopment) {
     // 开发环境，使用localhost:3001

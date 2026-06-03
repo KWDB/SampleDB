@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react'
-import { Alert, Button, Space, Typography, Card, Divider } from 'antd'
 import { 
-  WifiOutlined, 
-  DisconnectOutlined, 
-  ReloadOutlined,
-  CloudSyncOutlined,
-  ExclamationCircleOutlined
-} from '@ant-design/icons'
+  AlertCircle,
+  CloudCog,
+  RefreshCw,
+  Wifi,
+  WifiOff
+} from 'lucide-react'
 import { useNetworkStatus } from '../hooks/useNetworkStatus'
-
-const { Text, Paragraph } = Typography
+import { Alert, Button, Card, Divider, Paragraph, Space, Text } from './ui'
 
 
 
@@ -49,14 +47,14 @@ export const NetworkStatusIndicator = ({
         message="网络连接已断开"
         description="您当前处于离线状态，部分功能可能无法使用"
         type="warning"
-        icon={<DisconnectOutlined />}
+        icon={<WifiOff />}
         showIcon
         style={alertStyle}
         action={
           <Button 
             size="small" 
             type="text" 
-            icon={<ReloadOutlined />}
+            icon={<RefreshCw />}
             onClick={() => window.location.reload()}
           >
             重试
@@ -72,11 +70,10 @@ export const NetworkStatusIndicator = ({
         message="网络连接已恢复"
         description="正在同步最新数据..."
         type="success"
-        icon={<WifiOutlined />}
+        icon={<Wifi />}
         showIcon
         style={alertStyle}
-        closable
-        onClose={() => setShowReconnected(false)}
+        action={<Button size="small" type="text" onClick={() => setShowReconnected(false)}>关闭</Button>}
       />
     )
   }
@@ -104,7 +101,7 @@ export const OfflinePage = ({ onRetry }) => {
     }}>
       <Card style={{ maxWidth: '500px', textAlign: 'center' }}>
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
-          <DisconnectOutlined style={{ fontSize: '64px', color: '#faad14' }} />
+          <WifiOff style={{ width: '64px', height: '64px', color: '#8a5a00' }} />
           
           <div>
             <Text strong style={{ fontSize: '20px', display: 'block', marginBottom: '8px' }}>
@@ -132,14 +129,14 @@ export const OfflinePage = ({ onRetry }) => {
           <Space>
             <Button 
               type="primary" 
-              icon={<ReloadOutlined />}
+              icon={<RefreshCw />}
               onClick={() => window.location.reload()}
             >
               重新加载
             </Button>
             {onRetry && (
               <Button 
-                icon={<CloudSyncOutlined />}
+                icon={<CloudCog />}
                 onClick={onRetry}
               >
                 重试连接
@@ -182,7 +179,7 @@ export const DataSyncStatus = ({
         message="离线模式"
         description="当前处于离线状态，显示的是缓存数据"
         type="info"
-        icon={<DisconnectOutlined />}
+        icon={<WifiOff />}
         showIcon
         style={{ marginBottom: '16px' }}
       />
@@ -198,7 +195,7 @@ export const DataSyncStatus = ({
       marginBottom: '16px'
     }}>
       <Space>
-        <WifiOutlined style={{ color: '#52c41a' }} />
+        <Wifi style={{ color: '#18794e' }} />
         <Text type="secondary" style={{ fontSize: '12px' }}>
           {isSyncing ? '正在同步数据...' : `数据状态: ${formatSyncTime(lastSyncTime)}`}
         </Text>
@@ -206,7 +203,7 @@ export const DataSyncStatus = ({
           <Button 
             type="link" 
             size="small" 
-            icon={<CloudSyncOutlined />}
+            icon={<CloudCog />}
             onClick={onSync}
             style={{ padding: '0 4px', height: 'auto' }}
           >
@@ -245,7 +242,7 @@ export const OfflineDataNotice = ({
       message="离线数据提示"
       description={`当前显示的是${getDataAgeText()}的缓存数据，可能不是最新信息`}
       type="warning"
-      icon={<ExclamationCircleOutlined />}
+      icon={<AlertCircle />}
       showIcon
       style={{ marginBottom: '16px' }}
       action={

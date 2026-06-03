@@ -5,6 +5,12 @@
   "main": "server/index.js",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "dev:full": "npm run db:dev && npm run dev",
+    "db:dev": "bash scripts/dev-kwdb.sh up",
+    "db:reset": "bash scripts/dev-kwdb.sh reset",
+    "db:stop": "bash scripts/dev-kwdb.sh stop",
+    "db:status": "bash scripts/dev-kwdb.sh status",
+    "db:logs": "bash scripts/dev-kwdb.sh logs",
     "server": "cd server && npm start",
     "client": "cd client && npm run dev",
     "build": "cd client && npm run build",

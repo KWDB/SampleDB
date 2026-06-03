@@ -1,44 +1,75 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
-  Row, Col, Card, Table, Button, Space, Typography, Tag, Alert,
-  Descriptions, Statistic, Modal, Form, Input, InputNumber,
-  Select, Divider, Badge, Avatar, App
-} from 'antd'
+  Alert,
+  Button,
+  Card,
+  Descriptions,
+  DialogModal,
+  Divider,
+  Form,
+  Input,
+  InputNumber,
+  Option,
+  Select,
+  Space,
+  Table,
+  Tag,
+  Text,
+  Title,
+  useMessage
+} from '../components/ui'
 import {
-  DatabaseOutlined,
-  ReloadOutlined,
-  SettingOutlined,
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  WarningOutlined,
-  InfoCircleOutlined,
-  TableOutlined,
-  BarChartOutlined,
-  // CloudServerOutlined, // 未使用
-  PlusOutlined,
-  MonitorOutlined,
-  ClockCircleOutlined
-} from '@ant-design/icons'
+  AlertTriangle,
+  BarChart3,
+  CheckCircle2,
+  CircleX,
+  Database,
+  Info,
+  Plus,
+  RefreshCw,
+  Search,
+  Settings,
+  Table2
+} from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { api } from '../services/api'
 
-const { Title, Text } = Typography
-const { Option } = Select
+const tablePurposeMap = {
+  meter_info: '电表基础信息，连接用户、区域与时序读数',
+  user_info: '用户档案，用于演示关系数据关联',
+  area_info: '区域层级信息，用于按地区分析电表数据',
+  alarm_rules: '告警规则，用于说明业务规则与数据检测',
+  meter_data: '时序读数，承载电压、电流、功率和能耗数据'
+}
+
+const databaseLabels = {
+  rdb: '关系数据',
+  tsdb: '时序数据',
+  defaultdb: '默认库'
+}
+
+const tableTypeLabels = {
+  'BASE TABLE': '基础表',
+  VIEW: '视图',
+  'SYSTEM VIEW': '系统视图'
+}
 
 const DatabaseManagement = () => {
-  const { message } = App.useApp()
+  const message = useMessage()
+  const navigate = useNavigate()
   // 解析版本信息字符串
   const parseVersionInfo = (versionString) => {
     if (!versionString) return {};
-    
+
     // 解析版本字符串: "KaiwuDB 2.2.0 (aarch64-linux-gnu, built 2025/03/31 07:39:26, go1.16.15, gcc 11.4.0)"
     const versionMatch = versionString.match(/KaiwuDB\s+([\d.]+)/);
     const architectureMatch = versionString.match(/\(([^,]+),/);
     const buildTimeMatch = versionString.match(/built\s+([^,]+),/);
     const goVersionMatch = versionString.match(/go([\d.]+),/);
     const gccVersionMatch = versionString.match(/gcc\s+([\d.]+)\)/);
-    
+
     return {
       version: versionMatch ? versionMatch[1] : 'Unknown',
       architecture: architectureMatch ? architectureMatch[1] : 'Unknown',
@@ -56,13 +87,13 @@ const DatabaseManagement = () => {
   const [tableDataPageSize, setTableDataPageSize] = useState(20)
   const [form] = Form.useForm()
   const [generateForm] = Form.useForm()
-  
+
   const queryClient = useQueryClient()
 
   // 动态生成表格列
   const getTableDataColumns = (records) => {
     if (!records || records.length === 0) return []
-    
+
     const firstRecord = records[0]
     return Object.keys(firstRecord).map(key => ({
       title: key,
@@ -77,7 +108,7 @@ const DatabaseManagement = () => {
         if (typeof text === 'object') {
           return <Text code>{JSON.stringify(text)}</Text>
         }
-        
+
         const stringValue = String(text)
         // 检查是否包含换行符
         if (stringValue.includes('\n')) {
@@ -89,14 +120,14 @@ const DatabaseManagement = () => {
             </Text>
           )
         }
-        
+
         return <Text>{stringValue}</Text>
       }
     }))
   }
 
   // 获取数据库连接状态
-  const { data: connectionStatus, isLoading: _statusLoading, refetch: refetchStatus } = useQuery({
+  const { data: connectionStatus, isLoading: statusLoading, error: statusError, refetch: refetchStatus } = useQuery({
     queryKey: ['database-status'],
     queryFn: api.database.getStatus,
     refetchInterval: 10000, // 每10秒刷新一次
@@ -109,20 +140,20 @@ const DatabaseManagement = () => {
   })
 
   // 获取数据库统计信息
-  const { data: statistics, isLoading: _statisticsLoading, refetch: refetchStatistics } = useQuery({
+  const { data: statistics, refetch: refetchStatistics } = useQuery({
     queryKey: ['database-statistics'],
     queryFn: api.database.getStats,
     refetchInterval: 30000, // 每30秒刷新一次
   })
 
   // 获取表结构信息
-  const { data: tableInfo, isLoading: tableLoading, refetch: refetchTables } = useQuery({
+  const { data: tableInfo, isLoading: tableLoading, error: tableError, refetch: refetchTables } = useQuery({
     queryKey: ['database-tables'],
     queryFn: () => api.database.getSchema('mixed'),
   })
 
   // 获取系统信息
-  const { data: systemInfo, isLoading: systemLoading } = useQuery({
+  const { data: systemInfo, isLoading: systemLoading, error: systemError } = useQuery({
     queryKey: ['database-system'],
     queryFn: api.database.getInfo,
   })
@@ -193,37 +224,34 @@ const DatabaseManagement = () => {
       dataIndex: 'table_name',
       key: 'table_name',
       render: (name) => (
-        <Space>
-          <TableOutlined />
-          <Text strong>{name}</Text>
-        </Space>
+        <div className="schema-name-cell">
+          <Space size={8}>
+            <Table2 className="schema-table-icon" />
+            <Text strong>{name}</Text>
+          </Space>
+          <Text className="schema-purpose">{tablePurposeMap[name] || '用于 KWDB 示例查询的数据表'}</Text>
+        </div>
       )
     },
     {
       title: '数据库',
       dataIndex: 'database',
       key: 'database',
-      render: (db) => {
-        const colors = {
-          'rdb': 'blue',
-          'tsdb': 'green',
-          'defaultdb': 'orange'
-        }
-        return <Tag color={colors[db] || 'default'}>{db.toUpperCase()}</Tag>
-      }
+      render: (db) => (
+        <Tag className={`schema-tag db-${db || 'unknown'}`}>
+          {db?.toUpperCase()} · {databaseLabels[db] || '数据库'}
+        </Tag>
+      )
     },
     {
       title: '表类型',
       dataIndex: 'table_type',
       key: 'table_type',
-      render: (type) => {
-        const colors = {
-          'BASE TABLE': 'blue',
-          'VIEW': 'green',
-          'SYSTEM VIEW': 'orange'
-        }
-        return <Tag color={colors[type] || 'default'}>{type}</Tag>
-      }
+      render: (type) => (
+        <Tag className="schema-tag neutral">
+          {tableTypeLabels[type] || type}
+        </Tag>
+      )
     },
     {
       title: '列数',
@@ -236,9 +264,10 @@ const DatabaseManagement = () => {
       key: 'action',
       render: (_, record) => (
         <Space size="middle">
-          <Button 
-            type="link" 
+          <Button
+            type="text"
             size="small"
+            className="schema-row-action"
             onClick={() => {
               setSelectedTable(record);
               setTableDetailModalVisible(true);
@@ -255,223 +284,317 @@ const DatabaseManagement = () => {
   const getConnectionStatus = (status) => {
     switch (status) {
       case 'connected':
-        return { color: 'success', icon: <CheckCircleOutlined />, text: '已连接' }
+        return { color: 'success', tone: 'success', icon: <CheckCircle2 />, text: '已连接' }
       case 'disconnected':
-        return { color: 'error', icon: <CloseCircleOutlined />, text: '未连接' }
+        return { color: 'error', tone: 'error', icon: <CircleX />, text: '未连接' }
       case 'connecting':
-        return { color: 'processing', icon: <ReloadOutlined spin />, text: '连接中' }
+        return { color: 'processing', tone: 'pending', icon: <RefreshCw className="ui-icon-spin" />, text: '连接中' }
       default:
-        return { color: 'warning', icon: <WarningOutlined />, text: '未知' }
+        return { color: 'warning', tone: 'warning', icon: <AlertTriangle />, text: '未知' }
     }
   }
 
+  const tableRows = tableInfo?.data || []
+  const rdbSchemaTables = tableRows.filter(table => table.database === 'rdb')
+  const tsdbSchemaTables = tableRows.filter(table => table.database === 'tsdb')
+  const rdbTableCount = statistics?.data?.rdb?.tables?.length ?? rdbSchemaTables.length
+  const tsdbTableCount = statistics?.data?.tsdb?.tables?.length ?? tsdbSchemaTables.length
+  const systemVersionInfo = parseVersionInfo(systemInfo?.data?.version)
+  const connectionSummary = statusLoading
+    ? {
+        tone: 'pending',
+        icon: <RefreshCw className="ui-icon-spin" />,
+        title: '正在检查 KWDB 连接',
+        detail: '正在读取 RDB 与 TSDB 的连接状态。'
+      }
+    : statusError
+      ? {
+          tone: 'error',
+          icon: <CircleX />,
+          title: '无法读取 KWDB 连接状态',
+          detail: '请确认后端服务和 KWDB 示例数据库已启动，然后刷新状态。'
+        }
+    : connectionStatus?.data?.connected
+      ? {
+          tone: 'success',
+          icon: <CheckCircle2 />,
+          title: 'KWDB 示例环境已连接',
+          detail: '关系数据与时序数据都可以用于后续查询演示。'
+        }
+      : connectionStatus?.data
+        ? {
+            tone: 'error',
+            icon: <CircleX />,
+            title: 'KWDB 示例环境未完全连接',
+            detail: '请检查本地 KWDB 容器、端口配置或重新测试连接。'
+          }
+        : {
+            tone: 'warning',
+            icon: <AlertTriangle />,
+            title: '等待连接状态',
+            detail: '页面已加载，连接状态将在请求完成后更新。'
+          }
+
+  const connectionRows = [
+    {
+      key: 'RDB',
+      label: 'RDB',
+      role: '关系数据',
+      status: getConnectionStatus(connectionStatus?.data?.rdbStatus),
+      latency: connectionStatus?.data?.latency?.rdb
+    },
+    {
+      key: 'TSDB',
+      label: 'TSDB',
+      role: '时序数据',
+      status: getConnectionStatus(connectionStatus?.data?.tsdbStatus),
+      latency: connectionStatus?.data?.latency?.tsdb
+    }
+  ]
+
   return (
     <div className="database-management-container">
-      <div className="flex-between" style={{ marginBottom: 24 }}>
-        <Title level={2} style={{ margin: 0 }}>概览</Title>
-        
-        <Space>
-          <Button 
-            icon={<ReloadOutlined />} 
-            onClick={refreshAllData}
-          >
-            刷新
+      <header className="overview-hero">
+        <div className="overview-heading">
+          <Text className="overview-product-label">KWDB 智能电表示例</Text>
+          <Title level={1}>智能电表示例概览</Title>
+          <Text className="overview-subtitle">
+            查看 KWDB 中关系数据、时序数据和跨模型查询所依赖的示例结构。
+          </Text>
+        </div>
+
+        <Space className="overview-actions" size={8} wrap>
+          <Button icon={<RefreshCw />} onClick={refreshAllData}>
+            刷新状态
           </Button>
-          <Button 
-            icon={<PlusOutlined />} 
-            type="primary"
-            onClick={() => setGenerateDataModalVisible(true)}
-          >
-            生成测试数据
+          <Button icon={<Settings />} onClick={() => setConfigModalVisible(true)}>
+            查看配置
           </Button>
-          <Button 
-            icon={<SettingOutlined />} 
-            onClick={() => setConfigModalVisible(true)}
-          >
-            配置
+          <Button icon={<Search />} type="primary" onClick={() => navigate('/query')}>
+            打开示例 SQL
           </Button>
         </Space>
-      </div>
+      </header>
 
-      <Row gutter={[24, 24]}>
-        {/* 数据库统计概览 */}
-        <Col xs={24}>
-          <Row gutter={[16, 16]}>
-            <Col xs={12} sm={6}>
-              <Card className="stats-card" hoverable style={{ borderLeft: '4px solid #1890ff' }}>
-                <Statistic
-                     title="RDB 表数量"
-                     value={statistics?.data?.rdb?.tables?.length || 0}
-                     prefix={<DatabaseOutlined style={{ color: '#1890ff' }} />}
-                     valueStyle={{ color: '#1890ff', fontSize: '24px', fontWeight: 'bold' }}
-                     suffix="个"
-                   />
-                <div style={{ marginTop: 4, fontSize: '12px', color: '#666' }}>
-                  关系数据表
-                </div>
-              </Card>
-            </Col>
-            <Col xs={12} sm={6}>
-              <Card className="stats-card" hoverable style={{ borderLeft: '4px solid #52c41a' }}>
-                <Statistic
-                     title="TSDB 表数量"
-                     value={statistics?.data?.tsdb?.tables?.length || 0}
-                     prefix={<BarChartOutlined style={{ color: '#52c41a' }} />}
-                     valueStyle={{ color: '#52c41a', fontSize: '24px', fontWeight: 'bold' }}
-                     suffix="个"
-                   />
-                <div style={{ marginTop: 4, fontSize: '12px', color: '#666' }}>
-                  时序数据表
-                </div>
-              </Card>
-            </Col>
-            <Col xs={12} sm={6}>
-              <Card className="stats-card" hoverable style={{ borderLeft: '4px solid #fa8c16' }}>
-                <div style={{ position: 'relative' }}>
-                  <div style={{ position: 'absolute', top: 0, right: 0 }}>
-                    <Tag 
-                      color={getConnectionStatus(connectionStatus?.data?.rdbStatus).color}
-                      icon={getConnectionStatus(connectionStatus?.data?.rdbStatus).icon}
-                      style={{ fontSize: '11px', margin: 0 }}
-                    >
-                      {getConnectionStatus(connectionStatus?.data?.rdbStatus).text}
-                    </Tag>
-                  </div>
-                  <Statistic
-                    title="RDB 连接延迟"
-                    value={connectionStatus?.data?.latency?.rdb || 0}
-                    prefix={<ClockCircleOutlined style={{ color: '#fa8c16' }} />}
-                    valueStyle={{ color: '#fa8c16', fontSize: '24px', fontWeight: 'bold' }}
-                    suffix="ms"
-                  />
-                  <div style={{ marginTop: 4, fontSize: '12px', color: '#666' }}>
-                    关系数据表
-                  </div>
-                </div>
-              </Card>
-            </Col>
-            <Col xs={12} sm={6}>
-              <Card className="stats-card" hoverable style={{ borderLeft: '4px solid #722ed1' }}>
-                <div style={{ position: 'relative' }}>
-                  <div style={{ position: 'absolute', top: 0, right: 0 }}>
-                    <Tag 
-                      color={getConnectionStatus(connectionStatus?.data?.tsdbStatus).color}
-                      icon={getConnectionStatus(connectionStatus?.data?.tsdbStatus).icon}
-                      style={{ fontSize: '11px', margin: 0 }}
-                    >
-                      {getConnectionStatus(connectionStatus?.data?.tsdbStatus).text}
-                    </Tag>
-                  </div>
-                  <Statistic
-                    title="TSDB 连接延迟"
-                    value={connectionStatus?.data?.latency?.tsdb || 0}
-                    prefix={<MonitorOutlined style={{ color: '#722ed1' }} />}
-                    valueStyle={{ color: '#722ed1', fontSize: '24px', fontWeight: 'bold' }}
-                    suffix="ms"
-                  />
-                  <div style={{ marginTop: 4, fontSize: '12px', color: '#666' }}>
-                    时序数据表
-                  </div>
-                </div>
-              </Card>
-            </Col>
-          </Row>
-        </Col>
+      <section className={`overview-status-panel status-${connectionSummary.tone}`}>
+        <div className="status-copy">
+          <span className="status-icon" aria-hidden="true">{connectionSummary.icon}</span>
+          <div>
+            <Text className="status-title">{connectionSummary.title}</Text>
+            <Text className="status-detail">{connectionSummary.detail}</Text>
+          </div>
+        </div>
+        <div className="connection-strip" aria-label="数据库连接状态">
+          {connectionRows.map(item => (
+            <div className="connection-node" key={item.key}>
+              <span className={`connection-state-dot tone-${item.status.tone}`} aria-hidden="true" />
+              <div>
+                <Text className="connection-node-label">{item.label}</Text>
+                <Text className="connection-node-meta">
+                  {item.role} · {item.status.text}
+                  {typeof item.latency === 'number' ? ` · ${item.latency}ms` : ''}
+                </Text>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
 
-        {/* 系统信息 */}
-        <Col xs={24}>
-          <Card 
-            title={
-              <Space>
-                <Avatar size="small" style={{ backgroundColor: '#fa8c16' }}>
-                  <InfoCircleOutlined />
-                </Avatar>
-                <span>系统详细信息</span>
-              </Space>
-            }
-            className="system-info-card"
-            style={{ height: '100%' }}
-            loading={systemLoading}
-            extra={null}
-          >
-            {systemInfo?.data?.version && (() => {
-              const versionInfo = parseVersionInfo(systemInfo.data.version);
-              return (
-                <Descriptions column={2} bordered size="small">
-                  <Descriptions.Item label="KWDB版本">
-                    <Tag color="blue">{versionInfo.version || 'Unknown'}</Tag>
-                  </Descriptions.Item>
-                  <Descriptions.Item label="系统架构">
-                    <Tag color="green">{versionInfo.architecture || 'Unknown'}</Tag>
-                  </Descriptions.Item>
-                  <Descriptions.Item label="编译时间">
-                    <Text code>{versionInfo.buildTime || 'Unknown'}</Text>
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Go版本">
-                    <Tag color="orange">go{versionInfo.goVersion || 'Unknown'}</Tag>
-                  </Descriptions.Item>
-                  <Descriptions.Item label="GCC版本">
-                    <Tag color="purple">gcc {versionInfo.gccVersion || 'Unknown'}</Tag>
-                  </Descriptions.Item>
-                  <Descriptions.Item label="更新时间">
-                    {systemInfo.data.timestamp ? dayjs(systemInfo.data.timestamp).format('YYYY-MM-DD HH:mm:ss') : 'Unknown'}
-                  </Descriptions.Item>
-                </Descriptions>
-              );
-            })()}
-          </Card>
-        </Col>
+      <section className="overview-workspace" aria-label="KWDB 示例学习概览">
+        <Card className="overview-panel data-model-panel">
+          <div className="section-heading">
+            <div>
+              <Text className="section-label">数据模型</Text>
+              <Title level={2}>RDB 与 TSDB 如何组成这个示例</Title>
+            </div>
+            <Text className="section-meta">{tableRows.length} 张表</Text>
+          </div>
 
-        {/* 表结构信息 */}
-        <Col xs={24}>
-          <Card 
-            title={
-              <Space>
-                <Avatar size="small" style={{ backgroundColor: '#722ed1' }}>
-                  <TableOutlined />
-                </Avatar>
-                <span>数据表结构</span>
-                <Badge count={tableInfo?.data?.length || 0} style={{ backgroundColor: '#722ed1' }} />
-              </Space>
+          <div className="model-lanes">
+            <div className="model-lane">
+              <div className="model-lane-icon">
+                <Database />
+              </div>
+              <div className="model-lane-body">
+                <Text className="model-lane-title">RDB 关系数据</Text>
+                <Text className="model-lane-copy">
+                  保存电表、用户、区域和告警规则，负责解释每条读数的业务背景。
+                </Text>
+              </div>
+              <Text className="model-lane-count">{rdbTableCount} 表</Text>
+            </div>
+
+            <div className="model-lane">
+              <div className="model-lane-icon">
+                <BarChart3 />
+              </div>
+              <div className="model-lane-body">
+                <Text className="model-lane-title">TSDB 时序数据</Text>
+                <Text className="model-lane-copy">
+                  保存智能电表随时间变化的电压、电流、功率和能耗读数。
+                </Text>
+              </div>
+              <Text className="model-lane-count">{tsdbTableCount} 表</Text>
+            </div>
+          </div>
+        </Card>
+
+        <Card className="overview-panel learning-panel">
+          <div className="section-heading compact">
+            <div>
+              <Text className="section-label">学习路径</Text>
+              <Title level={2}>建议按这个顺序理解示例</Title>
+            </div>
+          </div>
+
+          <ol className="learning-steps">
+            <li>
+              <span>1</span>
+              <div>
+                <Text className="step-title">确认 KWDB 连接</Text>
+                <Text className="step-copy">先确认 RDB 与 TSDB 都可访问，避免查询页出现误导性错误。</Text>
+              </div>
+            </li>
+            <li>
+              <span>2</span>
+              <div>
+                <Text className="step-title">查看表结构</Text>
+                <Text className="step-copy">理解关系表如何补充时序读数的电表、用户和区域语义。</Text>
+              </div>
+            </li>
+            <li>
+              <span>3</span>
+              <div>
+                <Text className="step-title">运行示例 SQL</Text>
+                <Text className="step-copy">进入查询页观察跨模型查询如何组合关系数据与时序数据。</Text>
+              </div>
+            </li>
+          </ol>
+        </Card>
+      </section>
+
+      <Card
+        className="overview-panel system-info-card"
+
+        loading={systemLoading}
+      >
+        <div className="section-heading">
+          <div>
+            <Text className="section-label">运行环境</Text>
+            <Title level={2}>当前 KWDB 实例</Title>
+          </div>
+          <Info className="section-icon" />
+        </div>
+
+        {systemError ? (
+          <Alert
+            className="overview-state-alert"
+            message="无法读取 KWDB 实例信息"
+            description="请确认后端 API 可访问，再刷新状态。这个信息不影响你查看页面结构。"
+            type="warning"
+            showIcon
+          />
+        ) : systemInfo?.data?.version ? (
+          <Descriptions className="system-descriptions" column={{ xs: 1, sm: 2, lg: 3 }} size="small">
+            <Descriptions.Item label="KWDB 版本">
+              <Tag className="schema-tag neutral">{systemVersionInfo.version || 'Unknown'}</Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label="系统架构">
+              <Text code>{systemVersionInfo.architecture || 'Unknown'}</Text>
+            </Descriptions.Item>
+            <Descriptions.Item label="编译时间">
+              <Text code>{systemVersionInfo.buildTime || 'Unknown'}</Text>
+            </Descriptions.Item>
+            <Descriptions.Item label="Go 版本">
+              <Text code>go{systemVersionInfo.goVersion || 'Unknown'}</Text>
+            </Descriptions.Item>
+            <Descriptions.Item label="GCC 版本">
+              <Text code>gcc {systemVersionInfo.gccVersion || 'Unknown'}</Text>
+            </Descriptions.Item>
+            <Descriptions.Item label="更新时间">
+              {systemInfo.data.timestamp ? dayjs(systemInfo.data.timestamp).format('YYYY-MM-DD HH:mm:ss') : 'Unknown'}
+            </Descriptions.Item>
+          </Descriptions>
+        ) : (
+          <Text className="empty-copy">暂无系统版本信息。请检查 KWDB 连接后刷新状态。</Text>
+        )}
+      </Card>
+
+      <Card
+        className="overview-panel table-info-card"
+
+        loading={tableLoading}
+      >
+        <div className="schema-toolbar">
+          <div className="section-heading compact">
+            <div>
+              <Text className="section-label">表结构</Text>
+              <Title level={2}>示例数据表</Title>
+              <Text className="section-copy">
+                共 {tableRows.length} 张表，关系表解释业务语义，时序表承载电表读数。
+              </Text>
+            </div>
+          </div>
+          <Space size={8} wrap>
+            <Button type="text" icon={<Plus />} onClick={() => setGenerateDataModalVisible(true)}>
+              生成测试数据
+            </Button>
+            <Button type="text" icon={<RefreshCw />} onClick={refetchTables}>
+              刷新表结构
+            </Button>
+          </Space>
+        </div>
+
+        {tableError ? (
+          <Alert
+            className="overview-state-alert"
+            message="无法读取表结构"
+            description="请先确认 KWDB 容器、后端服务和示例数据导入状态。连接恢复后点击“刷新表结构”。"
+            type="warning"
+            showIcon
+            action={
+              <Button size="small" onClick={refetchTables}>
+                刷新表结构
+              </Button>
             }
-            className="table-info-card"
-            loading={tableLoading}
-            extra={
-              <Space>
-                <Text type="secondary">共 {tableInfo?.data?.length || 0} 个表</Text>
-                <Button 
-                  type="text" 
-                  icon={<ReloadOutlined />} 
-                  onClick={refetchTables}
-                  size="small"
-                >
-                  刷新
-                </Button>
-              </Space>
+          />
+        ) : !tableLoading && tableRows.length === 0 ? (
+          <Alert
+            className="overview-state-alert"
+            message="暂未读取到示例数据表"
+            description="如果这是首次运行，请先导入 smart-meter 示例数据；也可以生成测试数据后再次刷新。"
+            type="info"
+            showIcon
+            action={
+              <Button size="small" onClick={() => setGenerateDataModalVisible(true)}>
+                生成测试数据
+              </Button>
             }
-          >
-            <Table
-              dataSource={tableInfo?.data || []}
-              columns={tableColumns}
-              rowKey="table_name"
-              size="small"
-              scroll={{ x: true }}
-              pagination={{
-                pageSize: 10,
-                showSizeChanger: true,
-                showQuickJumper: true,
-                showTotal: (total) => `共 ${total} 个表`
-              }}
-            />
-          </Card>
-        </Col>
-      </Row>
+          />
+        ) : (
+          <Table
+            className="smart-table schema-table"
+            dataSource={tableRows}
+            columns={tableColumns}
+            rowKey={(record) => `${record.database}-${record.table_name}`}
+            size="middle"
+            scroll={{ x: true }}
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              showQuickJumper: true,
+              showTotal: (total) => `共 ${total} 张表`
+            }}
+          />
+        )}
+      </Card>
 
       {/* 配置模态框 */}
-      <Modal
+      <DialogModal
         title="数据库配置"
+        className="smart-meter-modal"
         open={configModalVisible}
-        onCancel={() => setConfigModalVisible(false)}
+        onOpenChange={setConfigModalVisible}
         footer={[
           <Button key="cancel" onClick={() => setConfigModalVisible(false)}>
             取消
@@ -491,11 +614,11 @@ const DatabaseManagement = () => {
           type="info"
           style={{ marginBottom: 16 }}
         />
-        
+
         {config?.data && (
-          <Form 
-            form={form} 
-            layout="vertical" 
+          <Form
+            form={form}
+            layout="vertical"
             disabled
             initialValues={{
               host: config.data.host,
@@ -507,28 +630,28 @@ const DatabaseManagement = () => {
               idle_timeout: config.data.idle_timeout
             }}
           >
-            <Row gutter={16}>
-              <Col span={12}>
+            <div className="ui-form-grid">
+              <div>
                 <Form.Item label="主机地址" name="host">
                   <Input />
                 </Form.Item>
-              </Col>
-              <Col span={12}>
+              </div>
+              <div>
                 <Form.Item label="端口" name="port">
                   <InputNumber style={{ width: '100%' }} />
                 </Form.Item>
-              </Col>
-              <Col span={12}>
+              </div>
+              <div>
                 <Form.Item label="用户名" name="user">
                   <Input />
                 </Form.Item>
-              </Col>
-              <Col span={12}>
+              </div>
+              <div>
                 <Form.Item label="密码">
                   <Input.Password placeholder="******" />
                 </Form.Item>
-              </Col>
-              <Col span={12}>
+              </div>
+              <div>
                 <Form.Item label="SSL模式" name="ssl_mode">
                   <Select>
                     <Option value="disable">禁用</Option>
@@ -536,34 +659,35 @@ const DatabaseManagement = () => {
                     <Option value="prefer">首选</Option>
                   </Select>
                 </Form.Item>
-              </Col>
-              <Col span={12}>
+              </div>
+              <div>
                 <Form.Item label="连接超时(秒)" name="connect_timeout">
                   <InputNumber min={1} max={60} style={{ width: '100%' }} />
                 </Form.Item>
-              </Col>
-              <Col span={12}>
+              </div>
+              <div>
                 <Form.Item label="最大连接数" name="max_connections">
                   <InputNumber min={1} max={100} style={{ width: '100%' }} />
                 </Form.Item>
-              </Col>
-              <Col span={12}>
+              </div>
+              <div>
                 <Form.Item label="空闲超时(秒)" name="idle_timeout">
                   <InputNumber min={60} max={3600} style={{ width: '100%' }} />
                 </Form.Item>
-              </Col>
-            </Row>
+              </div>
+            </div>
           </Form>
         )}
-      </Modal>
+      </DialogModal>
 
       {/* 生成测试数据模态框 */}
-      <Modal
+      <DialogModal
         title="生成测试数据"
+        className="smart-meter-modal"
         open={generateDataModalVisible}
-        onCancel={() => {
-          setGenerateDataModalVisible(false)
-          generateForm.resetFields()
+        onOpenChange={(open) => {
+          setGenerateDataModalVisible(open)
+          if (!open) generateForm.resetFields()
         }}
         footer={[
           <Button key="cancel" onClick={() => {
@@ -572,12 +696,12 @@ const DatabaseManagement = () => {
           }}>
             取消
           </Button>,
-          <Button 
-            key="generate" 
-            type="primary" 
+          <Button
+            key="generate"
+            type="primary"
             onClick={handleGenerateData}
             loading={generateDataMutation.isPending}
-            icon={<PlusOutlined />}
+            icon={<Plus />}
           >
             生成数据
           </Button>
@@ -590,9 +714,9 @@ const DatabaseManagement = () => {
           type="info"
           style={{ marginBottom: 16 }}
         />
-        
-        <Form 
-          form={generateForm} 
+
+        <Form
+          form={generateForm}
           layout="vertical"
           initialValues={{ count: 10000 }}
         >
@@ -609,12 +733,10 @@ const DatabaseManagement = () => {
               min={1}
               max={100000}
               step={1000}
-              formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={value => value.replace(/\$\s?|(,*)/g, '')}
               placeholder="请输入要生成的数据条数"
             />
           </Form.Item>
-          
+
           <Alert
             message="数据生成说明"
             description={
@@ -631,27 +753,30 @@ const DatabaseManagement = () => {
             style={{ marginTop: 16 }}
           />
         </Form>
-      </Modal>
+      </DialogModal>
 
       {/* 表详情模态框 */}
-      <Modal
+      <DialogModal
         title={
           <Space>
-            <DatabaseOutlined />
+            <Database />
             <span>{selectedTable?.table_name} - 表数据</span>
-            <Tag color={selectedTable?.database === 'rdb' ? 'blue' : 'green'}>
+            <Tag className={`schema-tag db-${selectedTable?.database || 'unknown'}`}>
               {selectedTable?.database?.toUpperCase()}
             </Tag>
           </Space>
         }
+        className="smart-meter-modal table-detail-modal"
         open={tableDetailModalVisible}
-        onCancel={() => {
-          setTableDetailModalVisible(false)
-          setSelectedTable(null)
-          setTableDataPage(1)
+        onOpenChange={(open) => {
+          setTableDetailModalVisible(open)
+          if (!open) {
+            setSelectedTable(null)
+            setTableDataPage(1)
+          }
         }}
         footer={[
-          <Button key="refresh" icon={<ReloadOutlined />} onClick={refetchTableData}>
+          <Button key="refresh" icon={<RefreshCw />} onClick={refetchTableData}>
             刷新数据
           </Button>,
           <Button key="close" onClick={() => {
@@ -663,16 +788,14 @@ const DatabaseManagement = () => {
           </Button>
         ]}
         width={1200}
-        style={{ top: 20 }}
       >
         {selectedTable && (
           <div>
-            {/* 表基本信息 */}
             <Alert
               message="表信息"
               description={
                 <Space split={<Divider type="vertical" />}>
-                  <Text>表类型: <Tag color="blue">{selectedTable.table_type}</Tag></Text>
+                  <Text>表类型: <Tag className="schema-tag neutral">{tableTypeLabels[selectedTable.table_type] || selectedTable.table_type}</Tag></Text>
                   <Text>列数: {selectedTable.column_count || 0}</Text>
                   <Text>总记录数: {tableData?.data?.pagination?.total || 0}</Text>
                 </Space>
@@ -680,9 +803,9 @@ const DatabaseManagement = () => {
               type="info"
               style={{ marginBottom: 16 }}
             />
-            
-            {/* 表数据 */}
+
             <Table
+              className="smart-table table-detail-table"
               dataSource={tableData?.data?.records || []}
               columns={getTableDataColumns(tableData?.data?.records)}
               rowKey={(record, index) => `row-${index}-${record.id || record.meter_id || record.timestamp || Object.values(record).slice(0, 3).join('-')}`}
@@ -699,7 +822,7 @@ const DatabaseManagement = () => {
                   setTableDataPage(page)
                   setTableDataPageSize(size)
                 },
-                onShowSizeChange: (current, size) => {
+                onShowSizeChange: (_current, size) => {
                   setTableDataPage(1)
                   setTableDataPageSize(size)
                 }
@@ -708,7 +831,7 @@ const DatabaseManagement = () => {
             />
           </div>
         )}
-      </Modal>
+      </DialogModal>
     </div>
   )
 }

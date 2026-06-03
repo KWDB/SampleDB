@@ -1,7 +1,6 @@
 import React from 'react'
-import { Result, Button, Typography } from 'antd'
-
-const { Text } = Typography
+import { AlertTriangle } from 'lucide-react'
+import { Button, Text } from '../components/ui'
 
 // 简化的错误显示组件
 const ErrorDisplay = ({ 
@@ -11,18 +10,15 @@ const ErrorDisplay = ({
   description = '数据加载时出现错误，请稍后重试' 
 }) => {
   return (
-    <Result
-      status="error"
-      title={title}
-      subTitle={description}
-      extra={[
-        onRetry && (
-          <Button key="retry" type="primary" onClick={onRetry}>
-            重试
-          </Button>
-        )
-      ]}
-    >
+    <div className="error-display" role="alert">
+      <AlertTriangle className="error-display-icon" aria-hidden="true" />
+      <Text className="error-display-title">{title}</Text>
+      <Text className="error-display-copy">{description}</Text>
+      {onRetry && (
+        <Button type="primary" onClick={onRetry}>
+          重试
+        </Button>
+      )}
       {error && (
         <div style={{ textAlign: 'left', marginTop: '16px' }}>
           <Text type="secondary" style={{ fontSize: '12px' }}>
@@ -30,7 +26,7 @@ const ErrorDisplay = ({
           </Text>
         </div>
       )}
-    </Result>
+    </div>
   )
 }
 

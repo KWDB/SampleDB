@@ -1,8 +1,6 @@
 import React from 'react'
-import { Result, Button, Card, Typography, Space } from 'antd'
-import { ExclamationCircleOutlined, ReloadOutlined, HomeOutlined } from '@ant-design/icons'
-
-const { Paragraph, Text } = Typography
+import { AlertTriangle, Home, RefreshCw } from 'lucide-react'
+import { Button, Card, Paragraph, Space, Text } from './ui'
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -24,10 +22,10 @@ class ErrorBoundary extends React.Component {
       error,
       errorInfo
     })
-    
+
     // 记录错误到控制台
     console.error('ErrorBoundary caught an error:', error, errorInfo)
-    
+
     // 可以在这里添加错误上报逻辑
     this.reportError(error, errorInfo)
   }
@@ -42,7 +40,7 @@ class ErrorBoundary extends React.Component {
       userAgent: navigator.userAgent,
       url: window.location.href
     }
-    
+
     // 这里可以发送到错误监控服务
     console.log('Error Report:', errorReport)
   }
@@ -71,35 +69,34 @@ class ErrorBoundary extends React.Component {
       }
 
       return (
-        <div style={{ padding: '24px', minHeight: '400px' }}>
-          <Result
-            status="error"
-            icon={<ExclamationCircleOutlined style={{ color: '#ff4d4f' }} />}
-            title="页面出现错误"
-            subTitle="抱歉，页面遇到了一些问题。您可以尝试刷新页面或返回首页。"
-            extra={[
-              <Space key="actions" size="middle">
-                <Button 
-                  type="primary" 
-                  icon={<ReloadOutlined />}
-                  onClick={this.handleRetry}
-                  disabled={retryCount >= 3}
-                >
-                  {retryCount >= 3 ? '重试次数已达上限' : '重试'}
-                </Button>
-                <Button 
-                  icon={<HomeOutlined />}
-                  onClick={this.handleGoHome}
-                >
-                  返回首页
-                </Button>
-              </Space>
-            ]}
-          />
-          
+        <div className="error-boundary">
+          <div className="error-boundary-panel">
+            <AlertTriangle className="error-boundary-icon" aria-hidden="true" />
+            <Text className="error-boundary-title">页面出现错误</Text>
+            <Text className="error-boundary-copy">
+              页面遇到了一些问题。你可以尝试刷新当前视图，或返回首页继续查看 KWDB 示例。
+            </Text>
+            <Space size="middle" wrap>
+              <Button
+                type="primary"
+                icon={<RefreshCw />}
+                onClick={this.handleRetry}
+                disabled={retryCount >= 3}
+              >
+                {retryCount >= 3 ? '重试次数已达上限' : '重试'}
+              </Button>
+              <Button
+                icon={<Home />}
+                onClick={this.handleGoHome}
+              >
+                返回首页
+              </Button>
+            </Space>
+          </div>
+
           {showDetails && error && (
-            <Card 
-              title="错误详情" 
+            <Card
+              title="错误详情"
               style={{ marginTop: '24px' }}
               size="small"
             >
@@ -108,7 +105,7 @@ class ErrorBoundary extends React.Component {
                 <br />
                 <Text code>{error.message}</Text>
               </Paragraph>
-              
+
               {errorInfo && (
                 <Paragraph>
                   <Text strong>组件堆栈：</Text>
@@ -118,7 +115,7 @@ class ErrorBoundary extends React.Component {
                   </Text>
                 </Paragraph>
               )}
-              
+
               <Paragraph>
                 <Text strong>错误堆栈：</Text>
                 <br />

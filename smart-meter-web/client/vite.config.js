@@ -34,7 +34,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom'],
-          antd: ['antd'],
+          'base-ui': ['@base-ui/react', 'lucide-react'],
           charts: ['echarts', 'echarts-for-react'],
           'react-query': ['@tanstack/react-query', '@tanstack/react-query-persist-client', '@tanstack/query-sync-storage-persister'],
           'router': ['react-router-dom'],
@@ -44,6 +44,6 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'antd', 'echarts'],
+    include: ['react', 'react-dom', '@base-ui/react', 'lucide-react', 'echarts'],
   },
 })
