@@ -35,7 +35,7 @@ KWDB 提供了多种容器镜像下载渠道，用户可以根据当前网络环
 
 #### 前置要求
 - Node.js 18+
-- KWDB 数据库
+- Docker（用于一键启动本地开发 KWDB）
 - npm 或 yarn
 
 #### 安装步骤
@@ -57,7 +57,33 @@ cd ../client
 npm install
 ```
 
-3. **配置环境变量**
+3. **启动本地开发 KWDB 并导入示例数据**
+```bash
+# 启动空 KWDB 容器，导入 smart-meter/extern 中的 rdb/tsdb 数据
+npm run db:dev
+```
+
+该命令会启动名为 `smart-meter-web-kwdb` 的本地开发容器，默认映射：
+- SQL 端口：`localhost:26257`
+- Admin UI 端口：`http://localhost:8080`
+- 示例数据来源：`../smart-meter/extern/rdb.tar.gz` 和 `../smart-meter/extern/tsdb.tar.gz`
+
+如果 `server/.env` 不存在，脚本会自动生成本地开发配置。若已存在自定义 `.env`，脚本不会覆盖；需要覆盖时可执行：
+```bash
+KWDB_DEV_OVERWRITE_ENV=1 npm run db:dev
+```
+
+常用数据库开发命令：
+```bash
+npm run db:status  # 查看容器和表导入状态
+npm run db:reset   # 重建一个空 KWDB 并重新导入数据
+npm run db:logs    # 查看 KWDB 容器日志
+npm run db:stop    # 停止开发 KWDB 容器
+```
+
+如需使用已有 KWDB，可跳过 `npm run db:dev`，直接按下面配置 `server/.env`。
+
+4. **配置环境变量（使用已有 KWDB 时）**
 ```bash
 # 复制环境变量模板
 cp server/.env.example server/.env
@@ -79,10 +105,10 @@ KWDB_SSL=false
 PORT=3001
 NODE_ENV=development
 # 生产环境下前后端合并，开发环境可分离部署
-CLIENT_URL=http://localhost:5173
+CLIENT_URL=http://localhost:3002
 ```
 
-4. **启动服务**
+5. **启动服务**
 
 **开发模式（前后端分离）：**
 ```bash
@@ -95,8 +121,13 @@ cd client
 npm run dev
 
 # 访问地址
-# Web 界面: http://localhost:5173
+# Web 界面: http://localhost:3002
 # API 服务: http://localhost:3001
+```
+
+也可以从项目根目录一键准备数据库并启动 Web 服务：
+```bash
+npm run dev:full
 ```
 
 **生产模式（前后端合并）：**

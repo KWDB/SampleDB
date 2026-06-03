@@ -14,6 +14,9 @@ node_modules/
 # Ignore build artifacts
 build/
 dist/
+smart-meter-web/.dev/
+smart-meter-web/.claude/
+smart-meter-web/.codex/
 
 # Ignore log files
 *.log
